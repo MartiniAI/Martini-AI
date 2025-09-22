@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 
 const BAU_CUA_ITEMS = [
@@ -80,7 +80,7 @@ const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance }) => {
   };
   
   return (
-    <div className="bau-cua-game">
+    <div className="game-container">
       <h2 className="game-title">Bầu Cua Tôm Cá</h2>
       <div className="stats-bar">
         <div className="balance" aria-label="Current Balance">Số dư: {balance}</div>
@@ -229,7 +229,7 @@ const DiceRoller: React.FC<GameProps> = ({ balance, setBalance }) => {
     };
 
     return (
-        <div className="dice-roller">
+        <div className="game-container">
             <h2 className="game-title">Đổ Xí Ngầu</h2>
             <div className="stats-bar">
                 <div className="balance" aria-label="Current Balance">Số dư: {balance}</div>
@@ -273,6 +273,341 @@ const DiceRoller: React.FC<GameProps> = ({ balance, setBalance }) => {
 };
 
 
+// --- Sudoku Game ---
+type Difficulty = 'easy' | 'medium' | 'expert';
+type Board = (number | null)[][];
+type ValidationBoard = ('correct' | 'incorrect' | 'empty')[][];
+
+const SUDOKU_DIFFICULTY_LEVELS: Record<Difficulty, { name: string; cellsToRemove: number }> = {
+    easy: { name: 'Đơn giản', cellsToRemove: 40 },
+    medium: { name: 'Trung bình', cellsToRemove: 50 },
+    expert: { name: 'Chuyên gia', cellsToRemove: 60 },
+};
+
+// Sudoku generation and solving utility functions
+const shuffle = (array: any[]) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
+
+const isValid = (board: Board, row: number, col: number, num: number) => {
+    for (let i = 0; i < 9; i++) {
+        if (board[row][i] === num || board[i][col] === num) return false;
+    }
+    const startRow = Math.floor(row / 3) * 3;
+    const startCol = Math.floor(col / 3) * 3;
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+            if (board[startRow + i][startCol + j] === num) return false;
+        }
+    }
+    return true;
+};
+
+const solveSudoku = (board: Board): boolean => {
+    for (let row = 0; row < 9; row++) {
+        for (let col = 0; col < 9; col++) {
+            if (board[row][col] === null) {
+                const numbers = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+                for (const num of numbers) {
+                    if (isValid(board, row, col, num)) {
+                        board[row][col] = num;
+                        if (solveSudoku(board)) {
+                            return true;
+                        }
+                        board[row][col] = null;
+                    }
+                }
+                return false;
+            }
+        }
+    }
+    return true;
+};
+
+const generateSudoku = (difficulty: Difficulty) => {
+    const solution: Board = Array(9).fill(null).map(() => Array(9).fill(null));
+    solveSudoku(solution);
+    
+    const puzzle = JSON.parse(JSON.stringify(solution));
+    let removed = 0;
+    while (removed < SUDOKU_DIFFICULTY_LEVELS[difficulty].cellsToRemove) {
+        const row = Math.floor(Math.random() * 9);
+        const col = Math.floor(Math.random() * 9);
+        if (puzzle[row][col] !== null) {
+            puzzle[row][col] = null;
+            removed++;
+        }
+    }
+    return { puzzle, solution };
+};
+
+const SudokuGame: React.FC = () => {
+    const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
+    const [initialBoard, setInitialBoard] = useState<Board | null>(null);
+    const [solutionBoard, setSolutionBoard] = useState<Board | null>(null);
+    const [currentBoard, setCurrentBoard] = useState<Board | null>(null);
+    const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
+    const [validation, setValidation] = useState<ValidationBoard | null>(null);
+    const [message, setMessage] = useState('');
+
+    const startGame = useCallback((level: Difficulty) => {
+        const { puzzle, solution } = generateSudoku(level);
+        setDifficulty(level);
+        setInitialBoard(puzzle);
+        setSolutionBoard(solution);
+        setCurrentBoard(JSON.parse(JSON.stringify(puzzle)));
+        setSelectedCell(null);
+        setValidation(null);
+        setMessage('');
+    }, []);
+
+    const handleCellClick = (row: number, col: number) => {
+        if (initialBoard && initialBoard[row][col] === null) {
+            setSelectedCell({ row, col });
+        }
+    };
+    
+    const handleNumberInput = (num: number) => {
+        if (selectedCell && currentBoard) {
+            const newBoard = JSON.parse(JSON.stringify(currentBoard));
+            newBoard[selectedCell.row][selectedCell.col] = num;
+            setCurrentBoard(newBoard);
+            setValidation(null); // Clear previous validation
+        }
+    };
+
+    const handleErase = () => {
+        if (selectedCell && currentBoard) {
+            const newBoard = JSON.parse(JSON.stringify(currentBoard));
+            newBoard[selectedCell.row][selectedCell.col] = null;
+            setCurrentBoard(newBoard);
+            setValidation(null);
+        }
+    };
+    
+    const handleCheck = () => {
+        if (!currentBoard || !solutionBoard) return;
+        const newValidation: ValidationBoard = Array(9).fill(null).map(() => Array(9).fill('empty'));
+        let isComplete = true;
+        let hasErrors = false;
+        
+        for (let r = 0; r < 9; r++) {
+            for (let c = 0; c < 9; c++) {
+                if (currentBoard[r][c] !== null) {
+                    if (currentBoard[r][c] === solutionBoard[r][c]) {
+                        newValidation[r][c] = 'correct';
+                    } else {
+                        newValidation[r][c] = 'incorrect';
+                        hasErrors = true;
+                    }
+                } else {
+                    isComplete = false;
+                }
+            }
+        }
+        setValidation(newValidation);
+        if (!hasErrors && isComplete) {
+            setMessage('Chúc mừng! Bạn đã giải đúng!');
+        } else if (hasErrors) {
+            setMessage('Có lỗi sai, hãy kiểm tra lại!');
+        } else {
+            setMessage('Các số đã điền đều đúng, tiếp tục nào!');
+        }
+    };
+    
+    const handleSolve = () => {
+        setCurrentBoard(solutionBoard);
+        setValidation(null);
+        setMessage('Bảng đã được giải.');
+    };
+
+    if (!difficulty || !currentBoard) {
+        return (
+            <div className="game-container sudoku-game">
+                <h2 className="game-title">Sudoku</h2>
+                <div className="difficulty-selector">
+                    <h3>Chọn cấp độ</h3>
+                    {Object.entries(SUDOKU_DIFFICULTY_LEVELS).map(([key, { name }]) => (
+                        <button key={key} onClick={() => startGame(key as Difficulty)} className="btn btn-primary">
+                            {name}
+                        </button>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="game-container sudoku-game">
+            <h2 className="game-title">Sudoku - {SUDOKU_DIFFICULTY_LEVELS[difficulty].name}</h2>
+            <div className="sudoku-board">
+                {currentBoard.map((row, r) =>
+                    row.map((cell, c) => {
+                        const isPrefilled = initialBoard && initialBoard[r][c] !== null;
+                        const isSelected = selectedCell?.row === r && selectedCell?.col === c;
+                        const isHighlighted = selectedCell && (selectedCell.row === r || selectedCell.col === c || (Math.floor(selectedCell.row / 3) === Math.floor(r / 3) && Math.floor(selectedCell.col / 3) === Math.floor(c / 3)));
+                        const validationStatus = validation?.[r][c];
+
+                        const cellClasses = [
+                            'sudoku-cell',
+                            isPrefilled ? 'prefilled' : '',
+                            isSelected ? 'selected' : '',
+                            isHighlighted ? 'highlighted' : '',
+                            validationStatus === 'correct' ? 'correct' : '',
+                            validationStatus === 'incorrect' ? 'incorrect' : ''
+                        ].join(' ');
+
+                        return (
+                            <div key={`${r}-${c}`} className={cellClasses} onClick={() => handleCellClick(r, c)} tabIndex={isPrefilled ? -1 : 0}>
+                                {cell}
+                            </div>
+                        );
+                    })
+                )}
+            </div>
+            <div className="number-pad">
+                {Array.from({ length: 9 }, (_, i) => i + 1).map(num => (
+                    <button key={num} onClick={() => handleNumberInput(num)} className="btn">{num}</button>
+                ))}
+                 <button onClick={handleErase} className="btn btn-secondary">Xóa</button>
+            </div>
+            <div className="controls sudoku-controls">
+                <button onClick={handleCheck} className="btn btn-primary">Kiểm tra</button>
+                <button onClick={handleSolve} className="btn btn-secondary">Giải bài</button>
+                <button onClick={() => startGame(difficulty)} className="btn btn-secondary">Chơi lại</button>
+                <button onClick={() => setDifficulty(null)} className="btn btn-secondary">Đổi cấp độ</button>
+            </div>
+            <div className={`status-message ${message.includes('Chúc mừng') ? 'win' : message.includes('lỗi') ? 'lose' : ''}`}>{message}</div>
+        </div>
+    );
+};
+
+// --- Memory Game ---
+const MONSTERS = ['👾', '👹', '👻', '👽', '💀', '🎃', '🤡', '😈', '🤖', '👺'];
+type MemoryDifficulty = 'easy' | 'medium' | 'expert';
+
+const MEMORY_DIFFICULTY_LEVELS: Record<MemoryDifficulty, { name: string; size: number; rows: number, cols: number }> = {
+    easy: { name: 'Đơn giản', size: 6, rows: 3, cols: 4 },
+    medium: { name: 'Trung bình', size: 8, rows: 4, cols: 4 },
+    expert: { name: 'Chuyên gia', size: 10, rows: 4, cols: 5 },
+};
+
+interface Card {
+  id: number;
+  type: string;
+}
+
+const MemoryGame: React.FC = () => {
+    const [difficulty, setDifficulty] = useState<MemoryDifficulty | null>(null);
+    const [cards, setCards] = useState<Card[]>([]);
+    const [flippedCards, setFlippedCards] = useState<number[]>([]);
+    const [matchedPairs, setMatchedPairs] = useState<string[]>([]);
+    const [moves, setMoves] = useState(0);
+    const [isChecking, setIsChecking] = useState(false);
+
+    const startGame = useCallback((level: MemoryDifficulty) => {
+        const { size } = MEMORY_DIFFICULTY_LEVELS[level];
+        const monsterSet = MONSTERS.slice(0, size);
+        const duplicatedMonsters = [...monsterSet, ...monsterSet];
+        const shuffledCards = shuffle(duplicatedMonsters).map((type, index) => ({ id: index, type }));
+        
+        setDifficulty(level);
+        setCards(shuffledCards);
+        setFlippedCards([]);
+        setMatchedPairs([]);
+        setMoves(0);
+    }, []);
+
+    const handleCardClick = (index: number) => {
+        if (isChecking || flippedCards.includes(index) || matchedPairs.includes(cards[index].type)) {
+            return;
+        }
+
+        const newFlippedCards = [...flippedCards, index];
+        setFlippedCards(newFlippedCards);
+        
+        if (newFlippedCards.length === 2) {
+            setMoves(m => m + 1);
+            setIsChecking(true);
+            const [firstIndex, secondIndex] = newFlippedCards;
+            if (cards[firstIndex].type === cards[secondIndex].type) {
+                setMatchedPairs(prev => [...prev, cards[firstIndex].type]);
+                setFlippedCards([]);
+                setIsChecking(false);
+            } else {
+                setTimeout(() => {
+                    setFlippedCards([]);
+                    setIsChecking(false);
+                }, 1000);
+            }
+        }
+    };
+
+    const isGameWon = difficulty && matchedPairs.length === MEMORY_DIFFICULTY_LEVELS[difficulty].size;
+
+    if (!difficulty) {
+         return (
+            <div className="game-container memory-game">
+                <h2 className="game-title">Thử Thách Trí Nhớ</h2>
+                <div className="difficulty-selector">
+                    <h3>Chọn cấp độ</h3>
+                    {Object.entries(MEMORY_DIFFICULTY_LEVELS).map(([key, { name }]) => (
+                        <button key={key} onClick={() => startGame(key as MemoryDifficulty)} className="btn btn-primary">
+                            {name}
+                        </button>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+    
+    const { rows, cols } = MEMORY_DIFFICULTY_LEVELS[difficulty];
+    const gridStyle = { gridTemplateColumns: `repeat(${cols}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)` };
+
+    return (
+        <div className="game-container memory-game">
+            <h2 className="game-title">Thử Thách Trí Nhớ - {MEMORY_DIFFICULTY_LEVELS[difficulty].name}</h2>
+            <div className="stats-bar">
+                <span>Số lần lật: {moves}</span>
+            </div>
+             {isGameWon ? (
+                <div className="win-screen">
+                    <h3>Chúc mừng! Bạn đã thắng!</h3>
+                    <p>Bạn đã hoàn thành trong {moves} lần lật.</p>
+                    <div className="controls">
+                      <button onClick={() => startGame(difficulty)} className="btn btn-primary">Chơi lại</button>
+                      <button onClick={() => setDifficulty(null)} className="btn btn-secondary">Đổi cấp độ</button>
+                    </div>
+                </div>
+            ) : (
+                <>
+                <div className="memory-board" style={gridStyle}>
+                    {cards.map((card, index) => {
+                        const isFlipped = flippedCards.includes(index) || matchedPairs.includes(card.type);
+                        return (
+                            <div key={index} className={`memory-card-container`} onClick={() => handleCardClick(index)}>
+                                <div className={`memory-card ${isFlipped ? 'flipped' : ''}`}>
+                                    <div className="card-face card-back">?</div>
+                                    <div className="card-face card-front">{card.type}</div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+                <div className="controls">
+                    <button onClick={() => setDifficulty(null)} className="btn btn-secondary">Đổi cấp độ</button>
+                </div>
+                </>
+             )}
+        </div>
+    );
+};
+
+
 const App = () => {
   const [activeGame, setActiveGame] = useState('bauCua');
   const [balance, setBalance] = useState<number>(1000);
@@ -288,11 +623,19 @@ const App = () => {
           <button onClick={() => setActiveGame('diceRoller')} className={activeGame === 'diceRoller' ? 'active' : ''}>
             Xí Ngầu
           </button>
+          <button onClick={() => setActiveGame('sudoku')} className={activeGame === 'sudoku' ? 'active' : ''}>
+            Sudoku
+          </button>
+          <button onClick={() => setActiveGame('memory')} className={activeGame === 'memory' ? 'active' : ''}>
+            Trí Nhớ
+          </button>
         </nav>
       </header>
       <main>
         {activeGame === 'bauCua' && <BauCuaGame balance={balance} setBalance={setBalance} />}
         {activeGame === 'diceRoller' && <DiceRoller balance={balance} setBalance={setBalance} />}
+        {activeGame === 'sudoku' && <SudokuGame />}
+        {activeGame === 'memory' && <MemoryGame />}
       </main>
     </div>
   );
