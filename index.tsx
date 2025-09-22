@@ -234,7 +234,6 @@ const DiceRoller: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
             
             const winningFace = roll.toString();
             let payout = 0;
-            // Payout is 5-to-1: player gets their bet back + 5 times the bet.
             if (bets[winningFace]) {
                 payout = bets[winningFace] + (bets[winningFace] * 5); 
             }
@@ -303,7 +302,6 @@ const DiceRoller: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
 };
 
 
-// --- Sudoku Game ---
 type Difficulty = 'easy' | 'medium' | 'expert';
 type Board = (number | null)[][];
 type ValidationBoard = ('correct' | 'incorrect' | 'empty')[][];
@@ -314,7 +312,6 @@ const SUDOKU_DIFFICULTY_LEVELS: Record<Difficulty, { name: string; cellsToRemove
     expert: { name: 'Chuyên gia', cellsToRemove: 60 },
 };
 
-// Sudoku generation and solving utility functions
 const shuffle = (array: any[]) => {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -408,7 +405,7 @@ const SudokuGame: React.FC<SoundProps> = ({ playSound }) => {
             const newBoard = JSON.parse(JSON.stringify(currentBoard));
             newBoard[selectedCell.row][selectedCell.col] = num;
             setCurrentBoard(newBoard);
-            setValidation(null); // Clear previous validation
+            setValidation(null);
         }
     };
 
@@ -529,7 +526,6 @@ const SudokuGame: React.FC<SoundProps> = ({ playSound }) => {
     );
 };
 
-// --- Memory Game ---
 const MONSTERS = ['👾', '👹', '👻', '👽', '💀', '🎃', '🤡', '😈', '🤖', '👺'];
 type MemoryDifficulty = 'easy' | 'medium' | 'expert';
 
@@ -664,9 +660,367 @@ const MemoryGame: React.FC<SoundProps> = ({ playSound }) => {
     );
 };
 
+const lunarConverter = {
+    lunarData: [
+        0x04bd8, 0x04ae0, 0x0a570, 0x054d5, 0x0d260, 0x0d950, 0x16554, 0x056a0, 0x09ad0, 0x055d2,
+        0x04ae0, 0x0a5b6, 0x0a4d0, 0x0d250, 0x1d255, 0x0b540, 0x0d6a0, 0x0ada2, 0x095b0, 0x14977,
+        0x04970, 0x0a4b0, 0x0b4b5, 0x06a50, 0x06d40, 0x1ab54, 0x02b60, 0x09570, 0x052f2, 0x04970,
+        0x06566, 0x0d4a0, 0x0ea50, 0x06e95, 0x05ad0, 0x02b60, 0x186e3, 0x092e0, 0x1c8d7, 0x0c950,
+        0x0d4a0, 0x1d8a6, 0x0b550, 0x056a0, 0x1a5b4, 0x025d0, 0x092d0, 0x0d2b2, 0x0a950, 0x0b557,
+        0x06ca0, 0x0b550, 0x15355, 0x04da0, 0x0a5b0, 0x14573, 0x052b0, 0x0a9a8, 0x0e950, 0x06aa0,
+        0x0aea6, 0x0ab50, 0x04b60, 0x0aae4, 0x0a570, 0x05260, 0x0f263, 0x0d950, 0x05b57, 0x056a0,
+        0x096d0, 0x04dd5, 0x04ad0, 0x0a4d0, 0x0d4d4, 0x0d250, 0x0d558, 0x0b540, 0x0b6a0, 0x195a6,
+        0x095b0, 0x049b0, 0x0a974, 0x0a4b0, 0x0b27a, 0x06a50, 0x06d40, 0x0af46, 0x0ab60, 0x09570,
+        0x04970, 0x0a4b2, 0x0a9d0, 0x0b250, 0x0c955, 0x0b5a0, 0x0b6d0, 0x06dd4, 0x02b60, 0x0a9b8,
+        0x0a950, 0x0b4a0, 0x0b5a6, 0x06d40, 0x055b0, 0x14575, 0x025d0, 0x092d0, 0x0d2b2, 0x0a950,
+        0x0b557, 0x06ca0, 0x0b550, 0x15355, 0x04da0, 0x0a5d0, 0x14573, 0x052d0, 0x0a9a8, 0x0e950,
+        0x06aa0, 0x0aea6, 0x0ab50, 0x04b60, 0x0aae4, 0x0a570, 0x05260, 0x0f263, 0x0d950, 0x05b57,
+        0x056a0, 0x096d0, 0x04dd5, 0x04ad0, 0x0a4d0, 0x0d4d4, 0x0d250, 0x0d558, 0x0b540, 0x0b6a0,
+        0x195a6, 0x095b0, 0x049b0, 0x0a974, 0x0a4b0, 0x0b27a, 0x06a50, 0x06d40, 0x0af46, 0x0ab60,
+        0x09570, 0x04970, 0x0a4b2, 0x0a9d0, 0x0b250, 0x0c955, 0x0b5a0, 0x0b6d0, 0x06dd4, 0x02b60,
+        0x0a9b8, 0x0a950, 0x0b4a0, 0x0b5a6, 0x06d40, 0x055b0, 0x14575, 0x025d0, 0x092d0, 0x0d2b2,
+        0x0a950, 0x0b557, 0x06ca0, 0x0b550, 0x15355, 0x04da0, 0x0a5d0, 0x14573, 0x052d0, 0x0a9a8,
+        0x0e950, 0x06aa0, 0x0aea6, 0x0ab50, 0x04b60, 0x0aae4, 0x0a570, 0x05260, 0x0f263, 0x0d950,
+        0x05b57, 0x056a0, 0x096d0, 0x04dd5, 0x04ad0, 0x0a4d0, 0x0d4d4, 0x0d250, 0x0d558, 0x0b540,
+        0x0b6a0, 0x195a6, 0x095b0, 0x049b0, 0x0a974, 0x0a4b0, 0x0b27a, 0x06a50, 0x06d40, 0x0af46
+    ],
+
+    getLeapMonth: (year: number) => {
+        return lunarConverter.lunarData[year - 1900] & 0xf;
+    },
+
+    getLeapMonthDays: (year: number) => {
+        if (lunarConverter.getLeapMonth(year) !== 0) {
+            return (lunarConverter.lunarData[year - 1900] & 0x10000) ? 30 : 29;
+        }
+        return 0;
+    },
+    
+    getLunarMonthDays: (year: number, month: number) => {
+        const data = lunarConverter.lunarData[year - 1900] & (0x8000 >> (month - 1));
+        return data ? 30 : 29;
+    },
+    
+    getLunarYearDays: (year: number) => {
+        let i, sum = 348;
+        for (i = 0x8000; i > 0x8; i >>= 1) {
+            sum += (lunarConverter.lunarData[year - 1900] & i) ? 1 : 0;
+        }
+        return sum + lunarConverter.getLeapMonthDays(year);
+    },
+
+    jdFromDate: (dd: number, mm: number, yy: number) => {
+        const a = Math.floor((14 - mm) / 12);
+        const y = yy + 4800 - a;
+        const m = mm + 12 * a - 3;
+        return dd + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+    },
+
+    convertSolarToLunar: (dd: number, mm: number, yy: number) => {
+        const CAN = ['Canh', 'Tân', 'Nhâm', 'Quý', 'Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ'];
+        const CHI = ['Thân', 'Dậu', 'Tuất', 'Hợi', 'Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tỵ', 'Ngọ', 'Mùi'];
+
+        // Start of the lunar calendar data (Jan 31, 1900)
+        const solarEpoch = new Date(1900, 0, 31, 12, 0, 0); // Use noon to avoid timezone issues
+        const solarDate = new Date(yy, mm - 1, dd, 12, 0, 0);
+        let offset = Math.floor((solarDate.getTime() - solarEpoch.getTime()) / 86400000);
+
+        let lunarYear, lunarMonth, lunarDay;
+        let isLeap = false;
+        
+        for (lunarYear = 1900; lunarYear < 2101 && offset >= 0; lunarYear++) {
+            const daysInYear = lunarConverter.getLunarYearDays(lunarYear);
+            if (offset < daysInYear) {
+                break;
+            }
+            offset -= daysInYear;
+        }
+
+        const leapMonth = lunarConverter.getLeapMonth(lunarYear);
+
+        for (lunarMonth = 1; lunarMonth <= 12; lunarMonth++) {
+            // Check regular month first
+            const daysInMonth = lunarConverter.getLunarMonthDays(lunarYear, lunarMonth);
+            if (offset < daysInMonth) {
+                isLeap = false;
+                break;
+            }
+            offset -= daysInMonth;
+
+            // Check if there is a leap month AFTER this regular month
+            if (lunarMonth === leapMonth) {
+                const daysInLeapMonth = lunarConverter.getLeapMonthDays(lunarYear);
+                if (offset < daysInLeapMonth) {
+                    isLeap = true;
+                    break;
+                }
+                offset -= daysInLeapMonth;
+            }
+        }
+        
+        lunarDay = offset + 1;
+        if (isLeap) {
+          lunarMonth = leapMonth;
+        }
+
+        const jd = lunarConverter.jdFromDate(dd, mm, yy);
+        const dayCanChi = `${CAN[(jd + 9) % 10]} ${CHI[(jd + 1) % 12]}`;
+        const yearCanChi = `${CAN[lunarYear % 10]} ${CHI[lunarYear % 12]}`;
+
+        return {
+            day: lunarDay,
+            month: lunarMonth,
+            year: lunarYear,
+            isLeap,
+            dayName: dayCanChi,
+            yearName: yearCanChi,
+        };
+    }
+};
+
+
+const LunarCalendar = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const [date, setDate] = useState(today);
+    const [lunarResult, setLunarResult] = useState(null);
+
+    const handleConvert = useCallback(() => {
+        const [yy, mm, dd] = date.split('-').map(Number);
+        const result = lunarConverter.convertSolarToLunar(dd, mm, yy);
+        setLunarResult(result);
+    }, [date]);
+    
+    useEffect(() => {
+        handleConvert();
+    }, [handleConvert]);
+
+    return (
+        <div className="tool-container">
+            <h2 className="game-title">Đổi Lịch Âm - Dương</h2>
+            <div className="form-group">
+                <label htmlFor="solar-date">Chọn ngày dương lịch:</label>
+                <input type="date" id="solar-date" value={date} onChange={(e) => setDate(e.target.value)} />
+                 <button onClick={handleConvert} className="btn btn-primary">Chuyển đổi</button>
+            </div>
+
+            {lunarResult && (
+                <div className="result-card" aria-live="polite">
+                    <h3>Kết quả</h3>
+                    <p><strong>Ngày Dương Lịch:</strong> {new Date(date + 'T00:00:00').toLocaleDateString('vi-VN')}</p>
+                    <p><strong>Ngày Âm Lịch:</strong> {lunarResult.day}/{lunarResult.month}/{lunarResult.year} {lunarResult.isLeap ? '(Nhuận)' : ''}</p>
+                    <p><strong>Ngày (Can Chi):</strong> {lunarResult.dayName}</p>
+                    <p><strong>Năm (Can Chi):</strong> {lunarResult.yearName}</p>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const CITIES = [
+    { name: 'Hanoi', image: 'https://lp-cms-production.imgix.net/2023-11/shutterstock_1549547057.jpg?auto=format&w=1440&h=810&fit=crop&q=75' },
+    { name: 'Ho Chi Minh City', image: 'https://images.adsttc.com/media/images/5d34/a5a8/284d/d10a/2f00/0037/large_jpg/190708_-_%E6%B8%9D%E5%AE%9D%E5%BB%9F%E5%AE%A4%E5%85%AC%E5%9C%92-5.jpg?1563731358' },
+    { name: 'Da Nang', image: 'https://statics.vinwonders.com/cau-vang-da-nang-banner.jpg' },
+    { name: 'Ha Long Bay', image: 'https://images.unsplash.com/photo-1597759231682-16b1b953a1e0?q=80&w=1974&auto=format&fit=crop' },
+    { name: 'Hoi An', image: 'https://images.unsplash.com/photo-1526481280643-333fa6652a94?q=80&w=2070&auto=format&fit=crop' },
+    { name: 'London', image: 'https://images.unsplash.com/photo-1529655683826-1a33ef0535c1?q=80&w=1974&auto=format&fit=crop' },
+    { name: 'Paris', image: 'https://images.unsplash.com/photo-1500313830543-599182981546?q=80&w=1974&auto=format&fit=crop' },
+    { name: 'Tokyo', image: 'https://images.unsplash.com/photo-1513407030348-c983a97b98d8?q=80&w=2072&auto=format&fit=crop' },
+    { name: 'New York', image: 'https://images.unsplash.com/photo-1485871981521-5b1fd3805eee?q=80&w=2070&auto=format&fit=crop' },
+    { name: 'Sydney', image: 'https://images.unsplash.com/photo-1524293581273-795a2718492c?q=80&w=2070&auto=format&fit=crop' },
+    { name: 'Singapore', image: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?q=80&w=1974&auto=format&fit=crop' },
+];
+
+const getMockWeatherData = () => ({
+    temp: (Math.random() * 10 + 25).toFixed(1), // 25-35°C
+    humidity: (Math.random() * 30 + 60).toFixed(0), // 60-90%
+    wind: (Math.random() * 15 + 5).toFixed(1), // 5-20 km/h
+    condition: ['Nắng đẹp', 'Nhiều mây', 'Có mưa rào'][Math.floor(Math.random() * 3)],
+});
+
+const WeatherForecast = () => {
+    const [city, setCity] = useState(CITIES[0].name);
+    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [time, setTime] = useState(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+    const [weather, setWeather] = useState(null);
+
+    const currentCityData = useMemo(() => CITIES.find(c => c.name === city) || CITIES[0], [city]);
+
+    useEffect(() => {
+        setWeather(getMockWeatherData());
+    }, [city]);
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        setWeather(getMockWeatherData());
+    };
+
+    return (
+        <div className="tool-container">
+            <h2 className="game-title">Dự Báo Thời Tiết</h2>
+            <form onSubmit={handleSearch} className="form-group weather-form">
+                <div className="input-group">
+                  <label htmlFor="city-select">Chọn thành phố:</label>
+                  <select id="city-select" value={city} onChange={(e) => setCity(e.target.value)}>
+                      {CITIES.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+                  </select>
+                </div>
+
+                <div className="input-group">
+                    <label htmlFor="date-input">Chọn ngày:</label>
+                    <input type="date" id="date-input" value={date} onChange={e => setDate(e.target.value)} />
+                </div>
+                
+                <div className="input-group">
+                    <label htmlFor="time-input">Chọn giờ:</label>
+                    <input type="time" id="time-input" value={time} onChange={e => setTime(e.target.value)} />
+                </div>
+
+                <button type="submit" className="btn btn-primary">Xem dự báo</button>
+            </form>
+            
+            {weather && currentCityData && (
+                <div className="result-card weather-result-card" aria-live="polite">
+                    {currentCityData.image && <img src={currentCityData.image} alt={`Hình ảnh của ${currentCityData.name}`} className="city-image" />}
+                    <div className="weather-content">
+                        <h3>Thời tiết tại {city}</h3>
+                        <p className="weather-datetime">{new Date(date + 'T00:00:00').toLocaleDateString('vi-VN')} lúc {time}</p>
+                        <p><strong>Nhiệt độ:</strong> {weather.temp}°C</p>
+                        <p><strong>Tình trạng:</strong> {weather.condition}</p>
+                        <p><strong>Độ ẩm:</strong> {weather.humidity}%</p>
+                        <p><strong>Gió:</strong> {weather.wind} km/h</p>
+                        <div className="external-links">
+                            <p>Xem dự báo chi tiết tại:</p>
+                            <a href={`https://www.accuweather.com/en/search-locations?query=${encodeURIComponent(city)}`} target="_blank" rel="noopener noreferrer">AccuWeather</a>
+                            <a href={`https://weather.com/weather/today/l/${encodeURIComponent(city)}`} target="_blank" rel="noopener noreferrer">The Weather Channel</a>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const ExchangeRates = () => {
+    // Hardcoded rates for demonstration. Base is USD.
+    const rates: Record<string, number> = {
+        'USD': 1,
+        'VND': 25458,
+        'EUR': 0.93, // Euro
+        'JPY': 157.10, // Japanese Yen
+        'GBP': 0.79, // British Pound
+        'AUD': 1.50, // Australian Dollar
+    };
+    const currencySymbols: Record<string, string> = {
+        'USD': '$',
+        'VND': '₫',
+        'EUR': '€',
+        'JPY': '¥',
+        'GBP': '£',
+        'AUD': 'A$',
+    };
+
+    const [amount, setAmount] = useState<number | string>(1);
+    const [fromCurrency, setFromCurrency] = useState('USD');
+    const [toCurrency, setToCurrency] = useState('VND');
+    const [result, setResult] = useState('');
+
+    useEffect(() => {
+        if (amount === '' || isNaN(Number(amount))) {
+            setResult('');
+            return;
+        }
+
+        const numAmount = Number(amount);
+        const amountInUsd = numAmount / rates[fromCurrency];
+        const convertedAmount = amountInUsd * rates[toCurrency];
+
+        const formattedResult = new Intl.NumberFormat('en-US', {
+            maximumFractionDigits: 2,
+        }).format(convertedAmount);
+        
+        setResult(`${formattedResult} ${currencySymbols[toCurrency] || toCurrency}`);
+
+    }, [amount, fromCurrency, toCurrency]);
+
+    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        if (value === '' || (!isNaN(Number(value)) && Number(value) >= 0)) {
+            setAmount(value);
+        }
+    };
+    
+    const handleSwap = () => {
+        setFromCurrency(toCurrency);
+        setToCurrency(fromCurrency);
+    };
+
+    return (
+        <div className="tool-container">
+            <h2 className="game-title">Giá Vàng & Tỷ Giá</h2>
+            
+            <div className="converter-card">
+                 <h3>Chuyển đổi tiền tệ</h3>
+                <div className="converter-form">
+                    <div className="converter-group">
+                        <label htmlFor="amount">Số tiền</label>
+                        <input 
+                            type="number" 
+                            id="amount" 
+                            value={amount} 
+                            onChange={handleAmountChange}
+                            min="0"
+                        />
+                    </div>
+                     <div className="converter-group">
+                        <label htmlFor="from-currency">Từ</label>
+                        <select id="from-currency" value={fromCurrency} onChange={e => setFromCurrency(e.target.value)}>
+                            {Object.keys(rates).map(curr => <option key={curr} value={curr}>{curr}</option>)}
+                        </select>
+                    </div>
+                    <div className="swap-button-container">
+                        <button onClick={handleSwap} className="btn-swap" aria-label="Hoán đổi tiền tệ">
+                           &#8646;
+                        </button>
+                    </div>
+                    <div className="converter-group">
+                        <label htmlFor="to-currency">Sang</label>
+                        <select id="to-currency" value={toCurrency} onChange={e => setToCurrency(e.target.value)}>
+                           {Object.keys(rates).map(curr => <option key={curr} value={curr}>{curr}</option>)}
+                        </select>
+                    </div>
+                </div>
+                {result && (
+                    <div className="converter-result">
+                        <p>{amount} {fromCurrency} =</p>
+                        <h2>{result}</h2>
+                    </div>
+                )}
+            </div>
+
+            <div className="result-card">
+                 <p className="disclaimer">Dữ liệu chỉ mang tính chất tham khảo tại thời điểm hiển thị.</p>
+                <div className="rate-item">
+                    <h4>Giá Vàng Quốc Tế</h4>
+                    <p className="price">$2,320.50 USD / ounce</p>
+                </div>
+                <div className="rate-item">
+                    <h4>Giá Vàng SJC (Việt Nam)</h4>
+                    <p className="price">90,500,000 VNĐ / lượng</p>
+                    <small>(1 lượng = 1.20565 ounces)</small>
+                </div>
+                <div className="external-links">
+                    <p>Xem tỷ giá trực tuyến:</p>
+                    <a href="https://www.kitco.com/charts/livegold.html" target="_blank" rel="noopener noreferrer">Kitco Gold</a>
+                    <a href="https://portal.vietcombank.com.vn/Personal/TG/Pages/ty-gia.aspx" target="_blank" rel="noopener noreferrer">Vietcombank</a>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
 const App = () => {
-  const [activeGame, setActiveGame] = useState('bauCua');
+  const [activeApp, setActiveApp] = useState('bauCua');
   const [balance, setBalance] = useState<number>(1000);
   const [isMuted, setIsMuted] = useState(false);
 
@@ -676,40 +1030,52 @@ const App = () => {
       }
   }, [isMuted]);
 
-  const handleNavClick = (game: string) => {
+  const handleNavClick = (appName: string) => {
     playSound('click');
-    setActiveGame(game);
+    setActiveApp(appName);
   }
 
   return (
     <div className="app-container">
       <header>
         <div className="header-title-container">
-            <h1>Trò Chơi May Rủi</h1>
+            <h1>Trung Tâm Giải Trí</h1>
             <button className="mute-btn" onClick={() => setIsMuted(prev => !prev)} aria-label={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}>
                 {isMuted ? '🔇' : '🔊'}
             </button>
         </div>
         <nav>
-          <button onClick={() => handleNavClick('bauCua')} className={activeGame === 'bauCua' ? 'active' : ''}>
+          <button onClick={() => handleNavClick('bauCua')} className={activeApp === 'bauCua' ? 'active' : ''}>
             Bầu Cua
           </button>
-          <button onClick={() => handleNavClick('diceRoller')} className={activeGame === 'diceRoller' ? 'active' : ''}>
+          <button onClick={() => handleNavClick('diceRoller')} className={activeApp === 'diceRoller' ? 'active' : ''}>
             Xí Ngầu
           </button>
-          <button onClick={() => handleNavClick('sudoku')} className={activeGame === 'sudoku' ? 'active' : ''}>
+          <button onClick={() => handleNavClick('sudoku')} className={activeApp === 'sudoku' ? 'active' : ''}>
             Sudoku
           </button>
-          <button onClick={() => handleNavClick('memory')} className={activeGame === 'memory' ? 'active' : ''}>
+          <button onClick={() => handleNavClick('memory')} className={activeApp === 'memory' ? 'active' : ''}>
             Trí Nhớ
+          </button>
+          <button onClick={() => handleNavClick('lunar')} className={activeApp === 'lunar' ? 'active' : ''}>
+            Lịch Âm
+          </button>
+          <button onClick={() => handleNavClick('weather')} className={activeApp === 'weather' ? 'active' : ''}>
+            Thời Tiết
+          </button>
+          <button onClick={() => handleNavClick('rates')} className={activeApp === 'rates' ? 'active' : ''}>
+            Tỷ Giá
           </button>
         </nav>
       </header>
       <main>
-        {activeGame === 'bauCua' && <BauCuaGame balance={balance} setBalance={setBalance} playSound={playSound} />}
-        {activeGame === 'diceRoller' && <DiceRoller balance={balance} setBalance={setBalance} playSound={playSound} />}
-        {activeGame === 'sudoku' && <SudokuGame playSound={playSound}/>}
-        {activeGame === 'memory' && <MemoryGame playSound={playSound} />}
+        {activeApp === 'bauCua' && <BauCuaGame balance={balance} setBalance={setBalance} playSound={playSound} />}
+        {activeApp === 'diceRoller' && <DiceRoller balance={balance} setBalance={setBalance} playSound={playSound} />}
+        {activeApp === 'sudoku' && <SudokuGame playSound={playSound}/>}
+        {activeApp === 'memory' && <MemoryGame playSound={playSound} />}
+        {activeApp === 'lunar' && <LunarCalendar />}
+        {activeApp === 'weather' && <WeatherForecast />}
+        {activeApp === 'rates' && <ExchangeRates />}
       </main>
     </div>
   );

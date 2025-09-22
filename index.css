@@ -102,7 +102,7 @@ header h1 {
 nav {
   display: flex;
   justify-content: center;
-  gap: 1rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
@@ -113,7 +113,7 @@ nav button {
   padding: 0.5rem 1rem;
   border-radius: var(--border-radius);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 500;
   transition: background-color 0.2s, color 0.2s;
 }
@@ -138,8 +138,8 @@ main {
   color: var(--primary-color);
 }
 
-/* --- Common Game Styles --- */
-.game-container {
+/* --- Common Game & Tool Styles --- */
+.game-container, .tool-container {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -157,13 +157,8 @@ main {
   border: 1px solid var(--border-color);
 }
 
-.balance {
-  color: var(--success-color);
-}
-
-.total-bet {
-  color: var(--danger-color);
-}
+.balance { color: var(--success-color); }
+.total-bet { color: var(--danger-color); }
 
 .betting-board {
   display: grid;
@@ -231,17 +226,13 @@ main {
   cursor: pointer;
   transition: background-color 0.2s, transform 0.1s;
 }
-.btn:active:not(:disabled) {
-    transform: scale(0.98);
-}
+.btn:active:not(:disabled) { transform: scale(0.98); }
 
 .btn-primary {
   background-color: var(--primary-color);
   color: white;
 }
-.btn-primary:hover:not(:disabled) {
-  background-color: var(--primary-hover);
-}
+.btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); }
 .btn-primary:disabled {
   background-color: var(--secondary-color);
   cursor: not-allowed;
@@ -252,9 +243,7 @@ main {
   background-color: var(--secondary-color);
   color: white;
 }
-.btn-secondary:hover {
-  background-color: #5a6268;
-}
+.btn-secondary:hover { background-color: #5a6268; }
 
 .status-message {
   font-size: 1.1rem;
@@ -265,18 +254,9 @@ main {
 .status-message.win { color: var(--success-color); }
 .status-message.lose { color: var(--danger-color); }
 
-
 /* --- Bầu Cua Specific Styles --- */
-.results-container {
-  text-align: center;
-}
-
-.bowl {
-  font-size: 5rem;
-  margin: 1rem auto;
-  display: inline-block;
-}
-
+.results-container { text-align: center; }
+.bowl { font-size: 5rem; margin: 1rem auto; display: inline-block; }
 .bowl.shaking {
   animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
   transform: translate3d(0, 0, 0);
@@ -291,39 +271,19 @@ main {
   40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
-.results-display {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin: 1rem 0;
-}
-
-.result-item {
-  font-size: 4rem;
-}
+.results-display { display: flex; justify-content: center; gap: 1rem; margin: 1rem 0; }
+.result-item { font-size: 4rem; }
 
 /* --- Dice Roller Specific Styles --- */
 .dice-results-container {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
   gap: 1rem;
   min-height: 100px;
   align-items: center;
 }
-
-.die {
-  display: inline-block;
-  width: 96px;
-  height: 96px;
-}
-
-.die.shaking {
-   animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
-  perspective: 1000px;
-}
+.die { display: inline-block; width: 96px; height: 96px; }
+.die.shaking { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
 
 /* --- Sudoku & Memory Game Common --- */
 .difficulty-selector {
@@ -336,10 +296,7 @@ main {
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
 }
-.difficulty-selector h3 {
-  font-size: 1.5rem;
-  color: var(--text-color);
-}
+.difficulty-selector h3 { font-size: 1.5rem; color: var(--text-color); }
 
 .win-screen {
   text-align: center;
@@ -348,30 +305,20 @@ main {
   border: 1px solid var(--success-color);
   border-radius: var(--border-radius);
 }
-.win-screen h3 {
-  color: var(--success-color);
-  font-size: 2rem;
-  margin-bottom: 1rem;
-}
+.win-screen h3 { color: var(--success-color); font-size: 2rem; margin-bottom: 1rem; }
 
 /* --- Sudoku Specific Styles --- */
-.sudoku-game {
-  align-items: center;
-}
-
+.sudoku-game { align-items: center; }
 .sudoku-board {
   display: grid;
   grid-template-columns: repeat(9, 1fr);
-  grid-template-rows: repeat(9, 1fr);
   width: 100%;
   max-width: 540px;
   aspect-ratio: 1 / 1;
   border: 3px solid #333;
   border-radius: 5px;
   overflow: hidden;
-  background-color: #fff;
 }
-
 .sudoku-cell {
   display: flex;
   justify-content: center;
@@ -380,133 +327,282 @@ main {
   border: 1px solid var(--border-color);
   transition: background-color 0.2s;
 }
-
-/* Thicker borders for 3x3 subgrids */
-.sudoku-cell:nth-child(3n) { border-right-width: 3px; border-right-color: #333; }
-.sudoku-cell:nth-child(9n) { border-right-width: 1px; border-right-color: var(--border-color); }
+.sudoku-cell:nth-child(3n) { border-right: 3px solid #333; }
+.sudoku-cell:nth-child(9n) { border-right: 1px solid var(--border-color); }
 .sudoku-board > .sudoku-cell:nth-child(n+19):nth-child(-n+27),
-.sudoku-board > .sudoku-cell:nth-child(n+46):nth-child(-n+54) {
-    border-bottom-width: 3px;
-    border-bottom-color: #333;
-}
-
-.sudoku-cell.prefilled {
-  font-weight: bold;
-  color: #333;
-}
-.sudoku-cell:not(.prefilled) {
-  cursor: pointer;
-  color: var(--primary-color);
-}
-.sudoku-cell.highlighted {
-  background-color: var(--sudoku-highlight-color);
-}
-.sudoku-cell.selected {
-  background-color: var(--sudoku-selected-color);
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
-}
-.sudoku-cell.correct {
-  background-color: #d4edda; /* Light green */
-  color: var(--success-color);
-}
-.sudoku-cell.incorrect {
-  background-color: #f8d7da; /* Light red */
-  color: var(--danger-color);
-}
-
-
-.number-pad {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0.5rem;
-  width: 100%;
-  max-width: 400px;
-}
-.number-pad .btn {
-  padding: 0.5rem;
-  font-size: 1.2rem;
-}
-
-.sudoku-controls {
-  flex-wrap: wrap; /* Ensure buttons wrap on small screens */
-}
+.sudoku-board > .sudoku-cell:nth-child(n+46):nth-child(-n+54) { border-bottom: 3px solid #333; }
+.sudoku-cell.prefilled { font-weight: bold; color: #333; }
+.sudoku-cell:not(.prefilled) { cursor: pointer; color: var(--primary-color); }
+.sudoku-cell.highlighted { background-color: var(--sudoku-highlight-color); }
+.sudoku-cell.selected { background-color: var(--sudoku-selected-color); }
+.sudoku-cell.correct { background-color: #d4edda; color: var(--success-color); }
+.sudoku-cell.incorrect { background-color: #f8d7da; color: var(--danger-color); }
+.number-pad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; width: 100%; max-width: 400px; }
+.number-pad .btn { padding: 0.5rem; font-size: 1.2rem; }
+.sudoku-controls { flex-wrap: wrap; }
 
 /* --- Memory Game Specific Styles --- */
-.memory-game {
-  align-items: center;
-}
-
-.memory-board {
-  display: grid;
-  gap: 1rem;
-  width: 100%;
-  max-width: 600px;
-}
-
-.memory-card-container {
-  perspective: 1000px;
-  cursor: pointer;
-  aspect-ratio: 1 / 1;
-}
-
+.memory-game { align-items: center; }
+.memory-board { display: grid; gap: 1rem; width: 100%; max-width: 600px; }
+.memory-card-container { perspective: 1000px; cursor: pointer; aspect-ratio: 1 / 1; }
 .memory-card {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform 0.6s;
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  width: 100%; height: 100%; position: relative;
+  transform-style: preserve-3d; transition: transform 0.6s;
+  border-radius: var(--border-radius); box-shadow: var(--box-shadow);
 }
-.memory-card.flipped {
-  transform: rotateY(180deg);
+.memory-card.flipped { transform: rotateY(180deg); }
+.card-face {
+  position: absolute; width: 100%; height: 100%;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  display: flex; justify-content: center; align-items: center;
+  border-radius: var(--border-radius); font-size: 3rem;
+}
+.card-back { background: linear-gradient(45deg, #6c757d, #343a40); color: white; }
+.card-front { background-color: var(--surface-color); border: 2px solid var(--border-color); transform: rotateY(180deg); }
+
+
+/* --- New Tool App Styles --- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+.form-group label {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  align-self: flex-start;
+}
+.form-group input[type="date"], 
+.form-group input[type="text"],
+.form-group input[type="time"],
+.form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+}
+.form-group .btn {
+  width: 100%;
+  margin-top: 0.5rem;
 }
 
-.card-face {
-  position: absolute;
+.weather-form {
+  max-width: 500px;
+}
+
+.input-group {
   width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+}
+
+.result-card {
+  background-color: var(--surface-color);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--box-shadow);
+  text-align: center;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.weather-result-card {
+    padding: 0;
+}
+
+.city-image {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    display: block;
+}
+
+.weather-content {
+    padding: 1.5rem;
+}
+
+.weather-datetime {
+    font-size: 1rem;
+    color: var(--secondary-color);
+    margin-bottom: 1rem;
+}
+
+.result-card h3 {
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+}
+.result-card p {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.external-links {
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1rem;
+}
+.external-links p {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+.external-links a {
+  display: inline-block;
+  margin: 0.25rem 0.5rem;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+.external-links a:hover {
+  text-decoration: underline;
+}
+
+.rate-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.rate-item:last-of-type {
+  border-bottom: none;
+}
+.rate-item h4 {
+  margin-bottom: 0.25rem;
+  color: var(--text-color);
+}
+.rate-item .price {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--success-color);
+  margin-bottom: 0;
+}
+.rate-item small {
+  color: var(--secondary-color);
+}
+
+.disclaimer {
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+  font-style: italic;
+}
+
+/* --- Currency Converter Styles --- */
+.converter-card {
+  background-color: var(--surface-color);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--box-shadow);
+  text-align: center;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.converter-card h3 {
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+}
+
+.converter-form {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: 1rem;
+}
+
+.converter-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.converter-group label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+}
+
+.converter-group input[type="number"],
+.converter-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  background-color: #f8f9fa;
+}
+
+.swap-button-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 0.5rem;
+}
+
+.btn-swap {
+  background-color: var(--surface-color);
+  border: 2px solid var(--border-color);
+  color: var(--primary-color);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.btn-swap:hover {
+  background-color: #e7f3ff;
+  transform: rotate(180deg);
+}
+
+.converter-result {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #e7f3ff;
   border-radius: var(--border-radius);
-  font-size: 3rem;
 }
 
-.card-back {
-  background: linear-gradient(45deg, #6c757d, #343a40);
-  color: white;
-  font-weight: bold;
+.converter-result p {
+  font-size: 1rem;
+  color: var(--secondary-color);
+  margin: 0 0 0.25rem 0;
 }
 
-.card-front {
-  background-color: var(--surface-color);
-  border: 2px solid var(--border-color);
-  transform: rotateY(180deg);
+.converter-result h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0;
+  word-break: break-all;
 }
 
 @media (max-width: 600px) {
-  main {
-    padding: 1rem;
+  main { padding: 1rem; }
+  .sudoku-cell { font-size: 1.2rem; }
+  .number-pad { grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); }
+  .card-face { font-size: 2rem; }
+  .header-title-container { flex-direction: column; gap: 0.5rem; }
+  .mute-btn { position: static; transform: none; margin-top: 0.5rem; }
+  nav { gap: 0.5rem; }
+  nav button { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+  .city-image { height: 200px; }
+  
+  .converter-form {
+    grid-template-columns: 1fr;
   }
-  .sudoku-cell {
-    font-size: 1.2rem;
-  }
-  .number-pad {
-    grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
-  }
-  .card-face {
-    font-size: 2rem;
-  }
-  .header-title-container {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .mute-btn {
-    position: static;
-    transform: none;
-    margin-top: 0.5rem;
+  .swap-button-container {
+      padding: 0;
+      margin: -0.5rem 0;
+      transform: rotate(90deg);
   }
 }
