@@ -380,6 +380,42 @@ const SudokuGame: React.FC<SoundProps> = ({ playSound }) => {
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
     const [validation, setValidation] = useState<ValidationBoard | null>(null);
     const [message, setMessage] = useState('');
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    useEffect(() => {
+        try {
+            const savedGame = localStorage.getItem('sudokuGameState');
+            if (savedGame) {
+                const { savedDifficulty, savedInitialBoard, savedSolutionBoard, savedCurrentBoard } = JSON.parse(savedGame);
+                if (savedDifficulty && savedInitialBoard && savedSolutionBoard && savedCurrentBoard) {
+                    setDifficulty(savedDifficulty);
+                    setInitialBoard(savedInitialBoard);
+                    setSolutionBoard(savedSolutionBoard);
+                    setCurrentBoard(savedCurrentBoard);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to load Sudoku game state:", error);
+            localStorage.removeItem('sudokuGameState');
+        }
+        setIsLoaded(true);
+    }, []);
+
+    useEffect(() => {
+        if (isLoaded && difficulty && currentBoard) {
+            try {
+                const gameState = {
+                    savedDifficulty: difficulty,
+                    savedInitialBoard: initialBoard,
+                    savedSolutionBoard: solutionBoard,
+                    savedCurrentBoard: currentBoard,
+                };
+                localStorage.setItem('sudokuGameState', JSON.stringify(gameState));
+            } catch (error) {
+                console.error("Failed to save Sudoku game state:", error);
+            }
+        }
+    }, [currentBoard, difficulty, initialBoard, solutionBoard, isLoaded]);
 
     const startGame = useCallback((level: Difficulty) => {
         playSound('click');
@@ -462,7 +498,14 @@ const SudokuGame: React.FC<SoundProps> = ({ playSound }) => {
 
     const handleDifficultyChange = () => {
         playSound('click');
+        localStorage.removeItem('sudokuGameState');
         setDifficulty(null);
+        setInitialBoard(null);
+        setSolutionBoard(null);
+        setCurrentBoard(null);
+        setSelectedCell(null);
+        setValidation(null);
+        setMessage('');
     }
 
     if (!difficulty || !currentBoard) {
@@ -547,6 +590,21 @@ const MemoryGame: React.FC<SoundProps> = ({ playSound }) => {
     const [matchedPairs, setMatchedPairs] = useState<string[]>([]);
     const [moves, setMoves] = useState(0);
     const [isChecking, setIsChecking] = useState(false);
+    const [highScores, setHighScores] = useState<Record<MemoryDifficulty, number | null>>({ easy: null, medium: null, expert: null });
+    const [isNewHighScore, setIsNewHighScore] = useState(false);
+
+    useEffect(() => {
+        try {
+            const savedScores = localStorage.getItem('memoryHighScores');
+            if (savedScores) {
+                const parsedScores = JSON.parse(savedScores);
+                setHighScores(prev => ({ ...prev, ...parsedScores }));
+            }
+        } catch (error) {
+            console.error("Failed to load memory high scores:", error);
+            localStorage.removeItem('memoryHighScores');
+        }
+    }, []);
 
     const startGame = useCallback((level: MemoryDifficulty) => {
         playSound('click');
@@ -560,6 +618,7 @@ const MemoryGame: React.FC<SoundProps> = ({ playSound }) => {
         setFlippedCards([]);
         setMatchedPairs([]);
         setMoves(0);
+        setIsNewHighScore(false);
     }, [playSound]);
 
     const handleCardClick = (index: number) => {
@@ -599,8 +658,19 @@ const MemoryGame: React.FC<SoundProps> = ({ playSound }) => {
     useEffect(() => {
         if (isGameWon) {
             playSound('gameWin');
+            const currentBest = highScores[difficulty!];
+            if (currentBest === null || moves < currentBest) {
+                setIsNewHighScore(true);
+                const newHighScores = { ...highScores, [difficulty!]: moves };
+                setHighScores(newHighScores);
+                try {
+                    localStorage.setItem('memoryHighScores', JSON.stringify(newHighScores));
+                } catch (error) {
+                    console.error("Failed to save high scores:", error);
+                }
+            }
         }
-    }, [isGameWon, playSound]);
+    }, [isGameWon, playSound, difficulty, moves, highScores]);
 
     if (!difficulty) {
          return (
@@ -610,7 +680,12 @@ const MemoryGame: React.FC<SoundProps> = ({ playSound }) => {
                     <h3>Chọn cấp độ</h3>
                     {Object.entries(MEMORY_DIFFICULTY_LEVELS).map(([key, { name }]) => (
                         <button key={key} onClick={() => startGame(key as MemoryDifficulty)} className="btn btn-primary">
-                            {name}
+                            <span>{name}</span>
+                            {highScores[key as MemoryDifficulty] !== null ? (
+                                <span className="high-score-display">Kỷ lục: {highScores[key as MemoryDifficulty]} lần</span>
+                            ) : (
+                                <span className="high-score-display">Chưa có kỷ lục</span>
+                            )}
                         </button>
                     ))}
                 </div>
@@ -630,6 +705,7 @@ const MemoryGame: React.FC<SoundProps> = ({ playSound }) => {
              {isGameWon ? (
                 <div className="win-screen">
                     <h3>Chúc mừng! Bạn đã thắng!</h3>
+                    {isNewHighScore && <p className="new-high-score">Kỷ lục mới!</p>}
                     <p>Bạn đã hoàn thành trong {moves} lần lật.</p>
                     <div className="controls">
                       <button onClick={() => startGame(difficulty)} className="btn btn-primary">Chơi lại</button>
@@ -1018,6 +1094,318 @@ const ExchangeRates = () => {
     );
 };
 
+const formatNumber = (num, precision = 4) => {
+    return parseFloat(num.toFixed(precision));
+};
+
+const QuadraticSolver = () => {
+    const [coeffs, setCoeffs] = useState({ a: '', b: '', c: '' });
+    const [solution, setSolution] = useState(null);
+
+    const handleSolve = () => {
+        const a = parseFloat(coeffs.a) || 0;
+        const b = parseFloat(coeffs.b) || 0;
+        const c = parseFloat(coeffs.c) || 0;
+
+        if (a === 0) {
+            if (b === 0) {
+                setSolution({
+                    equation: `${c} = 0`,
+                    deltaAnalysis: c === 0 ? "Phương trình vô số nghiệm." : "Phương trình vô nghiệm." ,
+                    roots: []
+                });
+            } else {
+                 setSolution({
+                    equation: `${b}x + ${c} = 0`,
+                    deltaAnalysis: "Đây là phương trình bậc nhất.",
+                    formula: `x = -c / b = ${-c} / ${b}`,
+                    roots: [`x = ${formatNumber(-c/b)}`]
+                });
+            }
+            return;
+        }
+
+        const delta = b * b - 4 * a * c;
+        let analysis, formula, roots;
+
+        if (delta > 0) {
+            const x1 = (-b + Math.sqrt(delta)) / (2 * a);
+            const x2 = (-b - Math.sqrt(delta)) / (2 * a);
+            analysis = `Δ > 0, phương trình có 2 nghiệm thực phân biệt.`;
+            formula = `x1,2 = (-b ± √Δ) / 2a`;
+            roots = [`x₁ = ${formatNumber(x1)}`, `x₂ = ${formatNumber(x2)}`];
+        } else if (delta === 0) {
+            const x = -b / (2 * a);
+            analysis = `Δ = 0, phương trình có nghiệm kép.`;
+            formula = `x = -b / 2a`;
+            roots = [`x₁ = x₂ = ${formatNumber(x)}`];
+        } else {
+            const realPart = -b / (2 * a);
+            const imagPart = Math.sqrt(-delta) / (2 * a);
+            analysis = `Δ < 0, phương trình có 2 nghiệm phức.`;
+            formula = `x1,2 = (-b ± i√(-Δ)) / 2a`;
+            roots = [
+                `x₁ = ${formatNumber(realPart)} + ${formatNumber(imagPart)}i`,
+                `x₂ = ${formatNumber(realPart)} - ${formatNumber(imagPart)}i`
+            ];
+        }
+        
+        setSolution({
+            equation: `${a}x² + ${b}x + ${c} = 0`,
+            deltaCalc: `Δ = ${b}² - 4 * ${a} * ${c}`,
+            deltaValue: delta,
+            deltaAnalysis: analysis,
+            formula: formula,
+            roots: roots
+        });
+    };
+
+    // FIX: Explicitly type the event parameter `e` to avoid type inference issues.
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setCoeffs({ ...coeffs, [e.target.name]: e.target.value });
+    };
+
+    return (
+        <div className="solver-container">
+            <h3>Giải phương trình bậc 2: ax² + bx + c = 0</h3>
+            <div className="solver-form">
+                <div className="input-group"><label>a =</label><input type="number" name="a" value={coeffs.a} onChange={handleChange} /></div>
+                <div className="input-group"><label>b =</label><input type="number" name="b" value={coeffs.b} onChange={handleChange} /></div>
+                <div className="input-group"><label>c =</label><input type="number" name="c" value={coeffs.c} onChange={handleChange} /></div>
+                <button onClick={handleSolve} className="btn btn-primary">Giải</button>
+            </div>
+            {solution && (
+                 <div className="solution-steps">
+                    <h4>Phương trình:</h4>
+                    <p>{solution.equation}</p>
+
+                    {solution.deltaCalc && <>
+                        <h4>1. Tính Delta (Δ)</h4>
+                        <p>Δ = b² - 4ac</p>
+                        <p>{solution.deltaCalc} = {formatNumber(solution.deltaValue)}</p>
+                    </>}
+
+                    <h4>2. Phân tích</h4>
+                    <p>{solution.deltaAnalysis}</p>
+                    
+                    {solution.formula && <>
+                      <h4>3. Công thức nghiệm</h4>
+                      <p>{solution.formula}</p>
+                    </>}
+
+                    <div className="final-result">
+                        <strong>Kết quả:</strong>
+                        {solution.roots.map((root, i) => <p key={i}>{root}</p>)}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const CubicSolver = () => {
+    // This is a simplified solver for demonstration and might not cover all edge cases perfectly.
+    const [coeffs, setCoeffs] = useState({ a: '', b: '', c: '', d: '' });
+    const [solution, setSolution] = useState(null);
+
+    const handleSolve = () => {
+        let a = parseFloat(coeffs.a) || 0;
+        let b = parseFloat(coeffs.b) || 0;
+        let c = parseFloat(coeffs.c) || 0;
+        let d = parseFloat(coeffs.d) || 0;
+
+        if (a === 0) {
+            setSolution({ message: "Hệ số 'a' không thể bằng 0. Đây là phương trình bậc 2 hoặc thấp hơn." });
+            return;
+        }
+
+        // Normalize to x^3 + ax^2 + bx + c = 0
+        b /= a; c /= a; d /= a;
+
+        const p = (3 * c - b * b) / 3;
+        const q = (2 * b * b * b - 9 * b * c + 27 * d) / 27;
+        const delta = (q / 2) * (q / 2) + (p / 3) * (p / 3) * (p / 3);
+        
+        const steps = [
+            `Phương trình ban đầu: ${coeffs.a}x³ + ${coeffs.b}x² + ${coeffs.c}x + ${coeffs.d} = 0`,
+            `Chuẩn hóa (chia cho a): x³ + ${formatNumber(b)}x² + ${formatNumber(c)}x + ${formatNumber(d)} = 0`,
+            `Đặt x = t - b/3a để khử số hạng bậc 2, ta được phương trình dạng t³ + pt + q = 0`,
+            `p = (3c - b²) / 3 = ${formatNumber(p)}`,
+            `q = (2b³ - 9bc + 27d) / 27 = ${formatNumber(q)}`,
+            `Tính biệt thức Δ = (q/2)² + (p/3)³ = ${formatNumber(delta)}`
+        ];
+
+        let roots = [];
+        if (delta >= 0) {
+            steps.push("Δ ≥ 0, có 1 nghiệm thực và 2 nghiệm phức (hoặc 3 nghiệm thực nếu Δ=0).");
+            const u = Math.cbrt(-q / 2 + Math.sqrt(delta));
+            const v = Math.cbrt(-q / 2 - Math.sqrt(delta));
+            const x1 = u + v - b / 3;
+            const x2_real = -0.5 * (u + v) - b / 3;
+            const x2_imag = (Math.sqrt(3) / 2) * (u - v);
+            
+            roots.push(`x₁ = ${formatNumber(x1)}`);
+            if (Math.abs(x2_imag) < 1e-9) { // 3 real roots (2 are same)
+                 roots.push(`x₂ = x₃ = ${formatNumber(x2_real)}`);
+            } else {
+                 roots.push(`x₂ = ${formatNumber(x2_real)} + ${formatNumber(x2_imag)}i`);
+                 roots.push(`x₃ = ${formatNumber(x2_real)} - ${formatNumber(x2_imag)}i`);
+            }
+        } else {
+            steps.push("Δ < 0, có 3 nghiệm thực phân biệt (trường hợp lượng giác).");
+            const t_k = (k) => 2 * Math.sqrt(-p / 3) * Math.cos((1 / 3) * Math.acos((3 * q / (2 * p)) * Math.sqrt(-3 / p)) - (2 * Math.PI * k / 3));
+            const x1 = t_k(0) - b/3;
+            const x2 = t_k(1) - b/3;
+            const x3 = t_k(2) - b/3;
+            roots.push(`x₁ = ${formatNumber(x1)}`);
+            roots.push(`x₂ = ${formatNumber(x2)}`);
+            roots.push(`x₃ = ${formatNumber(x3)}`);
+        }
+        
+        setSolution({ steps, roots });
+    };
+    
+    // FIX: Explicitly type the event parameter `e` to avoid type inference issues.
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setCoeffs({ ...coeffs, [e.target.name]: e.target.value });
+    };
+
+    return (
+        <div className="solver-container">
+            <h3>Giải phương trình bậc 3: ax³ + bx² + cx + d = 0</h3>
+            <div className="solver-form">
+                <div className="input-group"><label>a =</label><input type="number" name="a" value={coeffs.a} onChange={handleChange} /></div>
+                <div className="input-group"><label>b =</label><input type="number" name="b" value={coeffs.b} onChange={handleChange} /></div>
+                <div className="input-group"><label>c =</label><input type="number" name="c" value={coeffs.c} onChange={handleChange} /></div>
+                <div className="input-group"><label>d =</label><input type="number" name="d" value={coeffs.d} onChange={handleChange} /></div>
+                <button onClick={handleSolve} className="btn btn-primary">Giải</button>
+            </div>
+            {solution && (
+                 <div className="solution-steps">
+                     {solution.message ? <p>{solution.message}</p> : <>
+                        <h4>Các bước giải:</h4>
+                        {solution.steps.map((step, i) => <p key={i}>{i+1}. {step}</p>)}
+                        <div className="final-result">
+                            <strong>Kết quả:</strong>
+                            {solution.roots.map((root, i) => <p key={i}>{root}</p>)}
+                        </div>
+                     </>}
+                </div>
+            )}
+        </div>
+    );
+};
+
+const StatsCalculator = () => {
+    const [input, setInput] = useState('');
+    // FIX: Explicitly type the `results` state to handle both `string` and `number` values from the calculation, preventing rendering errors.
+    const [results, setResults] = useState<Record<string, string | number> | null>(null);
+
+    const handleCalculate = () => {
+        const numbers = input.split(/[\s,]+/).filter(Boolean).map(Number).filter(n => !isNaN(n));
+        if (numbers.length === 0) {
+            setResults(null);
+            return;
+        }
+
+        numbers.sort((a, b) => a - b);
+        const count = numbers.length;
+        const sum = numbers.reduce((acc, val) => acc + val, 0);
+        const mean = sum / count;
+        
+        let median;
+        const mid = Math.floor(count / 2);
+        if (count % 2 === 0) {
+            median = (numbers[mid - 1] + numbers[mid]) / 2;
+        } else {
+            median = numbers[mid];
+        }
+
+        // FIX: Explicitly type the accumulator in `reduce` to ensure `counts` has the correct type (`Record<string, number>`), preventing downstream errors with `Object.values`.
+        const counts = numbers.reduce((acc: Record<string, number>, val) => {
+            acc[val] = (acc[val] || 0) + 1;
+            return acc;
+        }, {});
+        const maxFreq = Math.max(...Object.values(counts));
+        const mode = Object.keys(counts).filter(key => counts[key] === maxFreq).join(', ');
+
+        const variance = numbers.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / count;
+        const stdDev = Math.sqrt(variance);
+
+        setResults({
+            'Số lượng': count,
+            'Tổng': formatNumber(sum),
+            'Số nhỏ nhất': numbers[0],
+            'Số lớn nhất': numbers[count - 1],
+            'Khoảng biến thiên': formatNumber(numbers[count - 1] - numbers[0]),
+            'Trung bình cộng (Mean)': formatNumber(mean),
+            'Trung vị (Median)': formatNumber(median),
+            'Yếu vị (Mode)': mode,
+            'Phương sai (Variance)': formatNumber(variance),
+            'Độ lệch chuẩn (Std. Dev.)': formatNumber(stdDev),
+        });
+    };
+
+    return (
+        <div className="solver-container">
+            <h3>Thống kê mô tả</h3>
+            <div className="form-group">
+                <label htmlFor="stats-input">Nhập dãy số (cách nhau bằng dấu phẩy hoặc khoảng trắng):</label>
+                <textarea 
+                    id="stats-input"
+                    className="stats-input-area" 
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    rows="4"
+                />
+                <button onClick={handleCalculate} className="btn btn-primary">Tính toán</button>
+            </div>
+            {results && (
+                 <div className="result-card">
+                    <h3>Kết quả thống kê</h3>
+                    {Object.entries(results).map(([key, value]) => (
+                        <div key={key} className="rate-item">
+                            <h4>{key}</h4>
+                            <p className="price">{value}</p>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+
+const MathSolver: React.FC<SoundProps> = ({ playSound }) => {
+  const [activeSolver, setActiveSolver] = useState('quadratic'); // 'quadratic', 'cubic', 'stats'
+
+  const handleNavClick = (solverName: string) => {
+    playSound('click');
+    setActiveSolver(solverName);
+  };
+
+  return (
+    <div className="tool-container math-solver">
+      <h2 className="game-title">Công Cụ Toán Học</h2>
+      <nav className="sub-nav">
+        <button onClick={() => handleNavClick('quadratic')} className={activeSolver === 'quadratic' ? 'active' : ''}>
+          PT Bậc 2
+        </button>
+        <button onClick={() => handleNavClick('cubic')} className={activeSolver === 'cubic' ? 'active' : ''}>
+          PT Bậc 3
+        </button>
+        <button onClick={() => handleNavClick('stats')} className={activeSolver === 'stats' ? 'active' : ''}>
+          Thống Kê
+        </button>
+      </nav>
+      <div className="solver-content">
+        {activeSolver === 'quadratic' && <QuadraticSolver />}
+        {activeSolver === 'cubic' && <CubicSolver />}
+        {activeSolver === 'stats' && <StatsCalculator />}
+      </div>
+    </div>
+  );
+};
 
 const App = () => {
   const [activeApp, setActiveApp] = useState('bauCua');
@@ -1057,6 +1445,9 @@ const App = () => {
           <button onClick={() => handleNavClick('memory')} className={activeApp === 'memory' ? 'active' : ''}>
             Trí Nhớ
           </button>
+           <button onClick={() => handleNavClick('math')} className={activeApp === 'math' ? 'active' : ''}>
+            Toán Học
+          </button>
           <button onClick={() => handleNavClick('lunar')} className={activeApp === 'lunar' ? 'active' : ''}>
             Lịch Âm
           </button>
@@ -1073,6 +1464,7 @@ const App = () => {
         {activeApp === 'diceRoller' && <DiceRoller balance={balance} setBalance={setBalance} playSound={playSound} />}
         {activeApp === 'sudoku' && <SudokuGame playSound={playSound}/>}
         {activeApp === 'memory' && <MemoryGame playSound={playSound} />}
+        {activeApp === 'math' && <MathSolver playSound={playSound} />}
         {activeApp === 'lunar' && <LunarCalendar />}
         {activeApp === 'weather' && <WeatherForecast />}
         {activeApp === 'rates' && <ExchangeRates />}

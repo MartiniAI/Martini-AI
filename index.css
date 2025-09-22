@@ -290,7 +290,7 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
   padding: 2rem;
   background: var(--surface-color);
   border-radius: var(--border-radius);
@@ -585,6 +585,154 @@ main {
   margin: 0;
   word-break: break-all;
 }
+
+/* --- Math Solver Styles --- */
+.math-solver .sub-nav {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.math-solver .sub-nav button {
+  background-color: var(--surface-color);
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+}
+.math-solver .sub-nav button:hover {
+  background-color: #e7f3ff;
+}
+.math-solver .sub-nav button.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.solver-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.solver-container h3 {
+    text-align: center;
+    color: var(--text-color);
+}
+
+.solver-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.solver-form .input-group {
+    flex-grow: 1;
+    min-width: 60px;
+    max-width: 100px;
+}
+.solver-form .input-group label {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+.solver-form input[type="number"] {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+}
+.solver-form .btn {
+    flex-shrink: 0;
+}
+
+.solution-steps {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+.solution-steps h4 {
+  color: var(--primary-color);
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+.solution-steps h4:first-child {
+  margin-top: 0;
+}
+.solution-steps p {
+  margin-bottom: 0.5rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  font-family: 'Courier New', Courier, monospace;
+}
+.solution-steps .final-result {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+.solution-steps .final-result strong {
+  font-size: 1.2rem;
+  color: var(--success-color);
+}
+.solution-steps .final-result p {
+  font-weight: bold;
+  color: var(--success-color);
+  font-size: 1.1rem;
+  font-family: var(--font-family);
+}
+
+.stats-input-area {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    min-height: 100px;
+    resize: vertical;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* --- Sudoku & Memory Game High Score/Save Feature Styles --- */
+.difficulty-selector .btn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-width: 180px;
+  min-height: 80px;
+  font-size: 1.2rem;
+}
+
+.high-score-display {
+  font-size: 0.8rem;
+  font-weight: normal;
+  opacity: 0.9;
+}
+
+.new-high-score {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--warning-color);
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+  margin-bottom: 0.5rem !important;
+}
+
 
 @media (max-width: 600px) {
   main { padding: 1rem; }
