@@ -6,7 +6,7 @@ declare var Howl: any;
 const sounds = {
   click: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/03/15/audio_2b2c14a277.mp3'], volume: 0.7 }),
   bet: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2021/08/09/audio_59a242f34e.mp3'], volume: 0.7 }),
-  shake: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2021/08/04/audio_16cc69f893.mp3'] }),
+  shake: new Howl({ src: ['https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/dice-shake.mp3'] }),
   win: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/03/10/audio_c3b092e85a.mp3'] }),
   lose: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/03/10/audio_c6f2293f77.mp3'] }),
   flip: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/03/15/audio_131165f17d.mp3'], volume: 0.6 }),
@@ -25,12 +25,12 @@ interface SoundProps {
 }
 
 const BAU_CUA_ITEMS = [
-  { id: 'nai', name: 'Nai', emoji: '🦌' },
-  { id: 'bau', name: 'Bầu', emoji: '🎃' },
-  { id: 'ga', name: 'Gà', emoji: '🐓' },
-  { id: 'ca', name: 'Cá', emoji: '🐟' },
-  { id: 'cua', name: 'Cua', emoji: '🦀' },
-  { id: 'tom', name: 'Tôm', emoji: '🦐' },
+  { id: 'bau', name: 'Bầu', imgSrc: 'https://i.imgur.com/sO3a25E.png' },
+  { id: 'cua', name: 'Cua', imgSrc: 'https://i.imgur.com/zO9a8bM.png' },
+  { id: 'tom', name: 'Tôm', imgSrc: 'https://i.imgur.com/xT3g9T8.png' },
+  { id: 'ca', name: 'Cá', imgSrc: 'https://i.imgur.com/qL3g64s.png' },
+  { id: 'ga', name: 'Gà', imgSrc: 'https://i.imgur.com/N2TcUv5.png' },
+  { id: 'nai', name: 'Nai', imgSrc: 'https://i.imgur.com/s65a25p.png' },
 ];
 
 const BET_AMOUNT = 10;
@@ -39,6 +39,24 @@ interface GameProps extends SoundProps {
   balance: number;
   setBalance: React.Dispatch<React.SetStateAction<number>>;
 }
+
+const DiceCube: React.FC<{ result: string | null; isShaking: boolean }> = ({ result, isShaking }) => {
+    const faces = ['nai', 'bau', 'ga', 'ca', 'cua', 'tom']; // Must match order of faces in CSS
+    const resultClass = result ? `show-${result}` : '';
+    const shakingClass = isShaking ? 'shaking' : '';
+
+    return (
+        <div className="dice-container">
+            <div className={`dice-cube ${shakingClass} ${resultClass}`}>
+                {faces.map(face => (
+                    <div key={face} className={`dice-face face-${face}`}>
+                        <img src={BAU_CUA_ITEMS.find(item => item.id === face)?.imgSrc} alt={face} />
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
 
 const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance, playSound }) => {
   const [bets, setBets] = useState<Record<string, number>>({});
@@ -79,7 +97,6 @@ const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
       const roll2 = BAU_CUA_ITEMS[Math.floor(Math.random() * BAU_CUA_ITEMS.length)].id;
       const roll3 = BAU_CUA_ITEMS[Math.floor(Math.random() * BAU_CUA_ITEMS.length)].id;
       const newResults = [roll1, roll2, roll3];
-      setResults(newResults);
       
       let payout = 0;
       for (const [itemId, betAmount] of Object.entries(bets)) {
@@ -92,60 +109,65 @@ const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
       const netChange = payout - totalBet;
       setBalance((prev: number) => prev + payout);
       
-      if (netChange > 0) {
-        setMessage(`Thắng ${netChange}!`);
-        playSound('win');
-      } else if (netChange < 0) {
-        setMessage(`Thua ${-netChange}.`);
-        playSound('lose');
-      } else {
-        setMessage('Hòa vốn!');
-      }
-
-      setBets({});
       setIsShaking(false);
-    }, 1000);
+      setResults(newResults);
+
+      setTimeout(() => {
+          if (netChange > 0) {
+            setMessage(`Thắng ${netChange}!`);
+            playSound('win');
+          } else if (netChange < 0) {
+            setMessage(`Thua ${-netChange}.`);
+            playSound('lose');
+          } else {
+            setMessage('Hòa vốn!');
+          }
+          setBets({});
+      }, 500); // Delay message update for better UX
+
+    }, 2500); // Increased shake duration for 3D animation
   };
   
   return (
-    <div className="game-container">
-      <h2 className="game-title">Bầu Cua Tôm Cá</h2>
+    <div className="game-container bau-cua-3d">
+      <h2 className="game-title">Bầu Cua Tôm Cá 3D</h2>
       <div className="stats-bar">
         <div className="balance" aria-label="Current Balance">Số dư: {balance}</div>
         <div className="total-bet" aria-label="Total Bet">Tổng cược: {totalBet}</div>
       </div>
-      <div className="betting-board" role="grid">
-        {BAU_CUA_ITEMS.map(item => (
-          <div 
-            key={item.id} 
-            className={`bet-item ${bets[item.id] > 0 ? 'selected' : ''}`}
-            onClick={() => placeBet(item.id)}
-            role="gridcell"
-            tabIndex={0}
-            aria-label={`Bet on ${item.name}`}
-            onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && placeBet(item.id)}
-          >
-            <div className="item-emoji" aria-hidden="true">{item.emoji}</div>
-            <div className="item-name">{item.name}</div>
-            <div className="bet-amount">{bets[item.id] > 0 ? bets[item.id] : ''}</div>
-          </div>
-        ))}
+      
+      <div className="bau-cua-board-perspective">
+        <div className="bau-cua-board-3d">
+          {BAU_CUA_ITEMS.map((item, index) => (
+            <div 
+              key={item.id} 
+              className={`bet-pad-3d bet-pad-${index} ${bets[item.id] > 0 ? 'selected' : ''}`}
+              onClick={() => placeBet(item.id)}
+              role="gridcell"
+              tabIndex={0}
+              aria-label={`Bet on ${item.name}`}
+            >
+              <div className="bet-pad-content">
+                <img src={item.imgSrc} alt={item.name} className="item-img" />
+                <div className="bet-amount">{bets[item.id] > 0 ? bets[item.id] : ''}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="results-container-3d">
+        <div className="dice-area">
+            <DiceCube result={results[0]} isShaking={isShaking} />
+            <DiceCube result={results[1]} isShaking={isShaking} />
+            <DiceCube result={results[2]} isShaking={isShaking} />
+        </div>
       </div>
        <div className="controls">
         <button onClick={handleShake} className="btn btn-primary" disabled={isShaking || totalBet === 0}>Lắc</button>
         <button onClick={clearBets} className="btn btn-secondary" disabled={isShaking || totalBet === 0}>Xóa cược</button>
       </div>
-      <div className="results-container">
-        <div className={`bowl ${isShaking ? 'shaking' : ''}`} aria-hidden="true">🥣</div>
-        <div className="results-display" aria-live="polite">
-          {results.map((res, index) => (
-            <div key={index} className="result-item" aria-label={`Result ${index+1}: ${res}`}>
-              {BAU_CUA_ITEMS.find(item => item.id === res)?.emoji}
-            </div>
-          ))}
-        </div>
-        <div className={`status-message ${message.includes('Thắng') ? 'win' : message.includes('Thua') ? 'lose' : ''}`}>{message}</div>
-      </div>
+      <div className={`status-message ${message.includes('Thắng') ? 'win' : message.includes('Thua') ? 'lose' : ''}`}>{message}</div>
     </div>
   );
 };
@@ -678,7 +700,7 @@ const MemoryGame: React.FC<SoundProps> = ({ playSound }) => {
     if (!difficulty) {
          return (
             <div className="game-container memory-game">
-                <h2 className="game-title">Thử Thách Trí Nhớ</h2>
+                <h2 className="game-title">Games Bắt Thú</h2>
                 <div className="difficulty-selector">
                     <h3>Chọn cấp độ</h3>
                     {Object.entries(MEMORY_DIFFICULTY_LEVELS).map(([key, { name }]) => (
@@ -701,7 +723,7 @@ const MemoryGame: React.FC<SoundProps> = ({ playSound }) => {
 
     return (
         <div className="game-container memory-game">
-            <h2 className="game-title">Thử Thách Trí Nhớ - {MEMORY_DIFFICULTY_LEVELS[difficulty].name}</h2>
+            <h2 className="game-title">Games Bắt Thú - {MEMORY_DIFFICULTY_LEVELS[difficulty].name}</h2>
             <div className="stats-bar">
                 <span>Số lần lật: {moves}</span>
             </div>
@@ -1102,13 +1124,13 @@ const formatNumber = (num: number, precision = 4) => {
 };
 
 const QuadraticSolver = () => {
-    const [coeffs, setCoeffs] = useState({ a: '', b: '', c: '' });
+    const [coeffs, setCoeffs] = useState<{ a: string | number; b: string | number; c: string | number; }>({ a: '', b: '', c: '' });
     const [solution, setSolution] = useState(null);
 
     const handleSolve = () => {
-        const a = parseFloat(coeffs.a) || 0;
-        const b = parseFloat(coeffs.b) || 0;
-        const c = parseFloat(coeffs.c) || 0;
+        const a = parseFloat(coeffs.a.toString()) || 0;
+        const b = parseFloat(coeffs.b.toString()) || 0;
+        const c = parseFloat(coeffs.c.toString()) || 0;
 
         if (a === 0) {
             if (b === 0) {
@@ -1548,7 +1570,9 @@ const StatsCalculator = () => {
             return acc;
         }, {});
         const maxFreq = Math.max(...Object.values(counts));
-        const mode = Object.keys(counts).filter(key => counts[key] === maxFreq).join(', ');
+        const modeKeys = Object.keys(counts).filter(key => counts[key] === maxFreq);
+        // FIX: The mode can be one or more numbers. Consistently represent it as a string.
+        const mode = modeKeys.join(', ');
 
         const variance = numbers.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / count;
         const stdDev = Math.sqrt(variance);
@@ -1875,6 +1899,18 @@ const IPhoneShell: React.FC<SoundProps> = ({ playSound }) => {
     )
 };
 
+const NAV_ITEMS = [
+    {id: 'iphone', name: 'iPhone 17', icon: '📱'},
+    {id: 'bauCua', name: 'Bầu Cua', icon: '🎲'},
+    {id: 'diceRoller', name: 'Xí Ngầu', icon: '🎲'},
+    {id: 'sudoku', name: 'Sudoku', icon: '🔢'},
+    {id: 'memory', name: 'Bắt Thú', icon: '👻'},
+    {id: 'math', name: 'Toán Học', icon: '🧮'},
+    {id: 'lunar', name: 'Lịch Âm', icon: '🗓️'},
+    {id: 'weather', name: 'Thời Tiết', icon: '🌦️'},
+    {id: 'rates', name: 'Tỷ Giá', icon: '💹'},
+];
+
 const App = () => {
   const [activeApp, setActiveApp] = useState('bauCua');
   const [balance, setBalance] = useState<number>(1000);
@@ -1890,57 +1926,45 @@ const App = () => {
     playSound('click');
     setActiveApp(appName);
   }
+  
+  const renderActiveApp = () => {
+    switch(activeApp) {
+        case 'iphone': return <IPhoneShell playSound={playSound} />;
+        case 'bauCua': return <BauCuaGame balance={balance} setBalance={setBalance} playSound={playSound} />;
+        case 'diceRoller': return <DiceRoller balance={balance} setBalance={setBalance} playSound={playSound} />;
+        case 'sudoku': return <SudokuGame playSound={playSound}/>;
+        case 'memory': return <MemoryGame playSound={playSound} />;
+        case 'math': return <MathSolver playSound={playSound} />;
+        case 'lunar': return <LunarCalendar />;
+        case 'weather': return <WeatherForecast />;
+        case 'rates': return <ExchangeRates />;
+        default: return <BauCuaGame balance={balance} setBalance={setBalance} playSound={playSound} />;
+    }
+  }
 
   return (
     <div className="app-container">
-      <header>
-        <div className="header-title-container">
-            <h1>Trung Tâm Giải Trí</h1>
-            <button className="mute-btn" onClick={() => setIsMuted(prev => !prev)} aria-label={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}>
-                {isMuted ? '🔇' : '🔊'}
-            </button>
-        </div>
-        <nav>
-          <button onClick={() => handleNavClick('iphone')} className={activeApp === 'iphone' ? 'active' : ''}>
-            iPhone 17
-          </button>
-          <button onClick={() => handleNavClick('bauCua')} className={activeApp === 'bauCua' ? 'active' : ''}>
-            Bầu Cua
-          </button>
-          <button onClick={() => handleNavClick('diceRoller')} className={activeApp === 'diceRoller' ? 'active' : ''}>
-            Xí Ngầu
-          </button>
-          <button onClick={() => handleNavClick('sudoku')} className={activeApp === 'sudoku' ? 'active' : ''}>
-            Sudoku
-          </button>
-          <button onClick={() => handleNavClick('memory')} className={activeApp === 'memory' ? 'active' : ''}>
-            Trí Nhớ
-          </button>
-           <button onClick={() => handleNavClick('math')} className={activeApp === 'math' ? 'active' : ''}>
-            Toán Học
-          </button>
-          <button onClick={() => handleNavClick('lunar')} className={activeApp === 'lunar' ? 'active' : ''}>
-            Lịch Âm
-          </button>
-          <button onClick={() => handleNavClick('weather')} className={activeApp === 'weather' ? 'active' : ''}>
-            Thời Tiết
-          </button>
-          <button onClick={() => handleNavClick('rates')} className={activeApp === 'rates' ? 'active' : ''}>
-            Tỷ Giá
-          </button>
-        </nav>
-      </header>
-      <main>
-        {activeApp === 'iphone' && <IPhoneShell playSound={playSound} />}
-        {activeApp === 'bauCua' && <BauCuaGame balance={balance} setBalance={setBalance} playSound={playSound} />}
-        {activeApp === 'diceRoller' && <DiceRoller balance={balance} setBalance={setBalance} playSound={playSound} />}
-        {activeApp === 'sudoku' && <SudokuGame playSound={playSound}/>}
-        {activeApp === 'memory' && <MemoryGame playSound={playSound} />}
-        {activeApp === 'math' && <MathSolver playSound={playSound} />}
-        {activeApp === 'lunar' && <LunarCalendar />}
-        {activeApp === 'weather' && <WeatherForecast />}
-        {activeApp === 'rates' && <ExchangeRates />}
-      </main>
+        <aside className="sidebar">
+            <div className="sidebar-header">
+                <h1>Giải Trí</h1>
+            </div>
+            <nav>
+                {NAV_ITEMS.map(item => (
+                    <button key={item.id} onClick={() => handleNavClick(item.id)} className={activeApp === item.id ? 'active' : ''}>
+                       <span className="nav-icon">{item.icon}</span> 
+                       <span>{item.name}</span>
+                    </button>
+                ))}
+            </nav>
+            <div className="sidebar-footer">
+                 <button className="mute-btn" onClick={() => setIsMuted(prev => !prev)} aria-label={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}>
+                    {isMuted ? '🔇' : '🔊'}
+                </button>
+            </div>
+        </aside>
+        <main className="main-content">
+            {renderActiveApp()}
+        </main>
     </div>
   );
 };
