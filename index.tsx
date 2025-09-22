@@ -25,12 +25,12 @@ interface SoundProps {
 }
 
 const BAU_CUA_ITEMS = [
+  { id: 'nai', name: 'Nai', imgSrc: 'https://i.imgur.com/s65a25p.png' },
   { id: 'bau', name: 'Bầu', imgSrc: 'https://i.imgur.com/sO3a25E.png' },
+  { id: 'ga', name: 'Gà', imgSrc: 'https://i.imgur.com/N2TcUv5.png' },
+  { id: 'ca', name: 'Cá', imgSrc: 'https://i.imgur.com/qL3g64s.png' },
   { id: 'cua', name: 'Cua', imgSrc: 'https://i.imgur.com/zO9a8bM.png' },
   { id: 'tom', name: 'Tôm', imgSrc: 'https://i.imgur.com/xT3g9T8.png' },
-  { id: 'ca', name: 'Cá', imgSrc: 'https://i.imgur.com/qL3g64s.png' },
-  { id: 'ga', name: 'Gà', imgSrc: 'https://i.imgur.com/N2TcUv5.png' },
-  { id: 'nai', name: 'Nai', imgSrc: 'https://i.imgur.com/s65a25p.png' },
 ];
 
 const BET_AMOUNT = 10;
@@ -137,30 +137,35 @@ const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
       </div>
       
       <div className="bau-cua-board-perspective">
-        <div className="bau-cua-board-3d">
-          {BAU_CUA_ITEMS.map((item, index) => (
-            <div 
-              key={item.id} 
-              className={`bet-pad-3d bet-pad-${index} ${bets[item.id] > 0 ? 'selected' : ''}`}
-              onClick={() => placeBet(item.id)}
-              role="gridcell"
-              tabIndex={0}
-              aria-label={`Bet on ${item.name}`}
-            >
-              <div className="bet-pad-content">
-                <img src={item.imgSrc} alt={item.name} className="item-img" />
-                <div className="bet-amount">{bets[item.id] > 0 ? bets[item.id] : ''}</div>
+        <div className="bau-cua-mat">
+          <div className="bau-cua-board-3d">
+            {BAU_CUA_ITEMS.map((item, index) => (
+              <div 
+                key={item.id} 
+                className={`bet-pad-3d bet-pad-${index} ${bets[item.id] > 0 ? 'selected' : ''}`}
+                onClick={() => placeBet(item.id)}
+                role="gridcell"
+                tabIndex={0}
+                aria-label={`Bet on ${item.name}`}
+              >
+                <div className="bet-pad-content">
+                  <img src={item.imgSrc} alt={item.name} className="item-img" />
+                  <span className="item-name-3d">{item.name}</span>
+                  {bets[item.id] > 0 && <div className="bet-amount">{bets[item.id]}</div>}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
       
       <div className="results-container-3d">
-        <div className="dice-area">
-            <DiceCube result={results[0]} isShaking={isShaking} />
-            <DiceCube result={results[1]} isShaking={isShaking} />
-            <DiceCube result={results[2]} isShaking={isShaking} />
+        <div className="dice-plate">
+          <div className="dice-area">
+              <DiceCube result={results[0]} isShaking={isShaking} />
+              <DiceCube result={results[1]} isShaking={isShaking} />
+              <DiceCube result={results[2]} isShaking={isShaking} />
+          </div>
         </div>
       </div>
        <div className="controls">
@@ -1572,7 +1577,7 @@ const StatsCalculator = () => {
         const maxFreq = Math.max(...Object.values(counts));
         const modeKeys = Object.keys(counts).filter(key => counts[key] === maxFreq);
         // FIX: The mode can be one or more numbers. Consistently represent it as a string.
-        const mode = modeKeys.join(', ');
+        const mode = modeKeys.map(Number).join(', ');
 
         const variance = numbers.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / count;
         const stdDev = Math.sqrt(variance);
