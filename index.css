@@ -1,3 +1,4 @@
+
 :root {
   --primary-color: #0d6efd;
   --primary-hover: #0b5ed7;
@@ -35,16 +36,16 @@ body {
   line-height: 1.6;
 }
 
-#root {
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
+html, body, #root {
+  height: 100%;
+  overflow: hidden; /* Prevent body scroll, let internal panels scroll on desktop */
 }
 
 .app-container {
   display: grid;
   grid-template-columns: var(--sidebar-width) 1fr;
-  height: 100vh;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* --- Sidebar --- */
@@ -55,6 +56,7 @@ body {
   padding: 1.5rem 1rem;
   border-right: 1px solid var(--border-color);
   box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+  overflow-y: auto; /* Allow sidebar to scroll if it has too much content */
 }
 .sidebar-header {
   padding: 0 0.5rem 1.5rem 0.5rem;
@@ -72,7 +74,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  overflow-y: auto;
 }
 .sidebar nav button {
   display: flex;
@@ -373,16 +374,18 @@ body {
   will-change: transform;
 }
 .dice-cube.shaking {
-  animation: dice-roll 2.5s ease-out forwards;
+  /* Refined timing function for a more dynamic, bouncy roll */
+  animation: dice-roll 2.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 .dice-face {
   position: absolute;
   width: 80px;
   height: 80px;
-  background-color: #f8fafc;
+  /* Enhanced lighting for more realism */
+  background: linear-gradient(145deg, #ffffff, #f1f5f9);
   border: 1px solid #cbd5e1;
   border-radius: 10px;
-  box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.15);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -954,16 +957,19 @@ body {
   justify-content: center;
   align-items: center;
   padding: 1rem 0;
+  width: 100%;
 }
 .iphone-shell {
-  width: 390px;
-  height: 844px;
+  width: 100%;
+  max-width: 390px;
+  aspect-ratio: 390 / 844;
+  height: auto;
   background-color: #111;
   border-radius: 54px;
   padding: 12px;
   box-shadow: 0 0 0 2px #555, 0 20px 40px rgba(0,0,0,0.5);
   margin: auto;
-  max-width: 100%;
+  min-height: 400px;
 }
 .iphone-screen {
   width: 100%;
@@ -982,6 +988,8 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  position: relative;
+  animation: app-transition-in 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .status-bar {
   position: absolute;
@@ -1011,6 +1019,17 @@ body {
 }
 .indicators { display: flex; gap: 6px; }
 
+@keyframes app-transition-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .iphone-app-screen {
   position: absolute;
   inset: 0;
@@ -1019,14 +1038,15 @@ body {
 }
 
 .home-screen {
-  padding: 44px 10px 90px 10px;
+  padding: 44px 16px 90px 16px;
   justify-content: space-between;
 }
 .app-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  padding: 20px;
+  row-gap: 24px;
+  column-gap: 16px;
+  padding: 16px 8px;
 }
 .app-icon-container {
   display: flex;
@@ -1056,7 +1076,7 @@ body {
   background-color: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
   border-radius: 24px;
-  padding: 10px 20px;
+  padding: 12px 20px;
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -1211,17 +1231,17 @@ body {
 
 
 @media (max-width: 768px) {
-  body {
+  html, body, #root {
     height: auto;
+    overflow: visible; /* Allow natural scrolling on mobile */
   }
-  #root {
-    height: auto;
-  }
+
   .app-container {
     display: flex;
     flex-direction: column;
     height: auto;
     min-height: 100vh;
+    overflow: visible;
   }
   .sidebar {
     flex-direction: row;
@@ -1230,6 +1250,10 @@ body {
     width: 100%;
     border-right: none;
     border-bottom: 1px solid var(--border-color);
+    position: sticky; /* Make top bar sticky */
+    top: 0;
+    z-index: 100;
+    overflow-y: visible;
   }
   .sidebar-header {
     padding: 0;
@@ -1242,17 +1266,19 @@ body {
   .sidebar nav {
     flex-direction: row;
     flex-grow: 1;
-    justify-content: center;
+    justify-content: flex-start;
     overflow-x: auto;
+    gap: 0;
   }
   .sidebar nav button {
     padding: 0.5rem;
+    flex-shrink: 0;
   }
   .sidebar nav button span:not(.nav-icon) {
     display: none;
   }
   .sidebar-footer {
-    margin: 0;
+    margin: 0 0 0 auto; /* Push mute button to the right */
     padding: 0;
     border: none;
   }
@@ -1263,6 +1289,8 @@ body {
 
   .main-content {
     padding: 1.5rem 1rem;
+    overflow-y: visible;
+    flex-grow: 1;
   }
   
   .bau-cua-board-3d {

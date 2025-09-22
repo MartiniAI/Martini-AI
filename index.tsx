@@ -1,3 +1,5 @@
+
+
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -1282,7 +1284,7 @@ const CubicSolver = () => {
             }
         } else {
             steps.push("Δ < 0, có 3 nghiệm thực phân biệt (trường hợp lượng giác).");
-            const t_k = (k) => 2 * Math.sqrt(-p / 3) * Math.cos((1 / 3) * Math.acos((3 * q / (2 * p)) * Math.sqrt(-3 / p)) - (2 * Math.PI * k / 3));
+            const t_k = (k: number) => 2 * Math.sqrt(-p / 3) * Math.cos((1 / 3) * Math.acos((3 * q / (2 * p)) * Math.sqrt(-3 / p)) - (2 * Math.PI * k / 3));
             const x1 = t_k(0) - b/3;
             const x2 = t_k(1) - b/3;
             const x3 = t_k(2) - b/3;
@@ -1571,13 +1573,13 @@ const StatsCalculator = () => {
         }
 
         const counts = numbers.reduce((acc: Record<string, number>, val) => {
-            acc[val] = (acc[val] || 0) + 1;
+            acc[String(val)] = (acc[String(val)] || 0) + 1;
             return acc;
-        }, {});
+        }, {} as Record<string, number>);
         const maxFreq = Math.max(...Object.values(counts));
         const modeKeys = Object.keys(counts).filter(key => counts[key] === maxFreq);
-        // FIX: The mode can be one or more numbers. Consistently represent it as a string.
-        const mode = modeKeys.map(Number).join(', ');
+        // If there's a single mode, treat it as a number. Otherwise, it's a string list.
+        const mode: string | number = modeKeys.length === 1 ? Number(modeKeys[0]) : modeKeys.join(', ');
 
         const variance = numbers.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / count;
         const stdDev = Math.sqrt(variance);
@@ -1892,7 +1894,7 @@ const IPhoneShell: React.FC<SoundProps> = ({ playSound }) => {
             <div className="iphone-shell">
                 <div className="iphone-screen">
                     <StatusBar />
-                    <div className="iphone-content">
+                    <div className="iphone-content" key={activeApp}>
                         {renderApp()}
                     </div>
                     <div className="home-bar-container" onClick={goHome}>
@@ -1937,7 +1939,7 @@ const App = () => {
         case 'iphone': return <IPhoneShell playSound={playSound} />;
         case 'bauCua': return <BauCuaGame balance={balance} setBalance={setBalance} playSound={playSound} />;
         case 'diceRoller': return <DiceRoller balance={balance} setBalance={setBalance} playSound={playSound} />;
-        case 'sudoku': return <SudokuGame playSound={playSound}/>;
+        case 'sudoku': return <SudokuGame playSound={playSound} />;
         case 'memory': return <MemoryGame playSound={playSound} />;
         case 'math': return <MathSolver playSound={playSound} />;
         case 'lunar': return <LunarCalendar />;
@@ -1945,37 +1947,38 @@ const App = () => {
         case 'rates': return <ExchangeRates />;
         default: return <BauCuaGame balance={balance} setBalance={setBalance} playSound={playSound} />;
     }
-  }
+  };
 
   return (
     <div className="app-container">
-        <aside className="sidebar">
-            <div className="sidebar-header">
-                <h1>Giải Trí</h1>
-            </div>
-            <nav>
-                {NAV_ITEMS.map(item => (
-                    <button key={item.id} onClick={() => handleNavClick(item.id)} className={activeApp === item.id ? 'active' : ''}>
-                       <span className="nav-icon">{item.icon}</span> 
-                       <span>{item.name}</span>
-                    </button>
-                ))}
-            </nav>
-            <div className="sidebar-footer">
-                 <button className="mute-btn" onClick={() => setIsMuted(prev => !prev)} aria-label={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}>
-                    {isMuted ? '🔇' : '🔊'}
+      <aside className="sidebar">
+        <div className="sidebar-header">
+            <h1>Giải Trí Center</h1>
+        </div>
+        <nav>
+            {NAV_ITEMS.map(item => (
+                <button 
+                  key={item.id} 
+                  className={activeApp === item.id ? 'active' : ''}
+                  onClick={() => handleNavClick(item.id)}
+                >
+                    <span className="nav-icon">{item.icon}</span>
+                    <span>{item.name}</span>
                 </button>
-            </div>
-        </aside>
-        <main className="main-content">
-            {renderActiveApp()}
-        </main>
+            ))}
+        </nav>
+        <div className="sidebar-footer">
+            <button onClick={() => { playSound('click'); setIsMuted(!isMuted); }} className="mute-btn">
+                {isMuted ? '🔊' : '🔇'}
+            </button>
+        </div>
+      </aside>
+      <main className="main-content">
+          {renderActiveApp()}
+      </main>
     </div>
   );
 };
 
-const container = document.getElementById('root');
-if (container) {
-  const root = createRoot(container);
-  root.render(<React.StrictMode><App /></React.StrictMode>);
-}
+const root = createRoot(document.getElementById('root')!);
+root.render(<App />);

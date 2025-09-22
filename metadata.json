@@ -1,6 +1,6 @@
 {
-  "name": "Trò Chơi May Rủi",
-  "description": "Một trung tâm giải trí với giao diện chuyên nghiệp, trò chơi Bầu Cua 3D, Xí Ngầu, Sudoku, Games Bắt Thú và các công cụ tiện ích như Giải Toán, Lịch Âm, Thời Tiết, và Giả lập iPhone 17.",
+  "name": "Giải Trí Center",
+  "description": "Một trung tâm giải trí đa năng, được tối ưu hóa hoàn toàn với layout chuyên nghiệp. Bao gồm các trò chơi 3D như Bầu Cua, Xí Ngầu, Sudoku, Games Bắt Thú và các công cụ tiện ích như Giải Toán, Lịch Âm, Thời Tiết, và Giả lập iPhone 17.",
   "requestFramePermissions": [
     "camera"
   ]
