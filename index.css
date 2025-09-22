@@ -1,0 +1,295 @@
+:root {
+  --primary-color: #007bff;
+  --primary-hover: #0056b3;
+  --secondary-color: #6c757d;
+  --background-color: #f8f9fa;
+  --surface-color: #ffffff;
+  --text-color: #212529;
+  --border-color: #dee2e6;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --font-family: 'Roboto', sans-serif;
+  --border-radius: 8px;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 1rem;
+  background-image: url('https://cdn.dribbble.com/userupload/11993249/file/original-b184144161834943c7b2e9c20a455173.jpg?resize=1024x683');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+#root {
+  width: 100%;
+  max-width: 800px;
+}
+
+.app-container {
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border-radius: var(--border-radius);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+header {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  background: linear-gradient(45deg, #007bff, #0056b3);
+}
+
+header h1 {
+  margin-bottom: 0.5rem;
+  font-size: 2rem;
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+nav button {
+  background-color: transparent;
+  border: 2px solid white;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+nav button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+nav button.active {
+  background-color: white;
+  color: var(--primary-color);
+}
+
+main {
+  padding: 1.5rem;
+}
+
+.game-title {
+  text-align: center;
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+}
+
+/* --- Common Game Styles --- */
+.bau-cua-game, .dice-roller {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.stats-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(0,0,0,0.03);
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius);
+  font-size: 1.2rem;
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+}
+
+.balance {
+  color: var(--success-color);
+}
+
+.total-bet {
+  color: var(--danger-color);
+}
+
+.betting-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.bet-item {
+  background-color: var(--surface-color);
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.bet-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+}
+
+.bet-item.selected {
+  border-color: var(--primary-color);
+  background-color: #e7f3ff;
+  box-shadow: 0 0 10px var(--primary-color);
+}
+
+.item-emoji {
+  font-size: 3rem;
+  line-height: 1;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.item-name {
+  font-weight: 500;
+  margin: 0.5rem 0;
+}
+
+.bet-amount {
+  font-size: 1rem;
+  color: var(--primary-color);
+  font-weight: bold;
+  min-height: 1.5rem;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+.btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+}
+.btn-primary:disabled {
+  background-color: var(--secondary-color);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.btn-secondary {
+  background-color: var(--secondary-color);
+  color: white;
+}
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.status-message {
+  font-size: 1.1rem;
+  font-weight: 500;
+  min-height: 1.6rem;
+  text-align: center;
+}
+.status-message.win { color: var(--success-color); }
+.status-message.lose { color: var(--danger-color); }
+
+
+/* --- Bầu Cua Specific Styles --- */
+.results-container {
+  text-align: center;
+}
+
+.bowl {
+  font-size: 5rem;
+  margin: 1rem auto;
+  display: inline-block;
+}
+
+.bowl.shaking {
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+.results-display {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.result-item {
+  font-size: 4rem;
+}
+
+/* --- Dice Roller Specific Styles --- */
+.dice-results-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 100px;
+  align-items: center;
+}
+
+.die {
+  display: inline-block;
+  width: 96px;
+  height: 96px;
+}
+
+.die.shaking {
+   animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.total-sum {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
