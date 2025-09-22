@@ -706,6 +706,75 @@ main {
     font-family: 'Courier New', Courier, monospace;
 }
 
+.linear-system-form {
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.linear-system-form .input-row {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    width: 100%;
+}
+.linear-system-form p {
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: -1rem;
+    color: var(--secondary-color);
+}
+.linear-system-form .btn {
+    margin-top: 1rem;
+    width: 100%;
+    max-width: 400px;
+}
+
+.calculus-mode-selector {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.calculus-mode-selector button {
+  background-color: var(--surface-color);
+  border: 2px solid var(--secondary-color);
+  color: var(--secondary-color);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.calculus-mode-selector button:hover {
+  background-color: #f0f0f0;
+}
+.calculus-mode-selector button.active {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.calculus-form {
+    align-items: stretch;
+}
+.calculus-form .input-group {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.calculus-form label {
+    font-size: 1.2rem;
+    font-weight: bold;
+    font-family: 'Courier New', Courier, monospace;
+}
+.func-input {
+    flex-grow: 1;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 1.2rem;
+    font-family: 'Courier New', Courier, monospace;
+}
+
 /* --- Sudoku & Memory Game High Score/Save Feature Styles --- */
 .difficulty-selector .btn {
   display: flex;
@@ -733,6 +802,246 @@ main {
   margin-bottom: 0.5rem !important;
 }
 
+/* --- iPhone Simulator --- */
+.iphone-shell-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 0;
+}
+.iphone-shell {
+  width: 390px;
+  height: 844px;
+  background-color: #111;
+  border-radius: 54px;
+  padding: 12px;
+  box-shadow: 0 0 0 2px #555, 0 20px 40px rgba(0,0,0,0.5);
+}
+.iphone-screen {
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  border-radius: 42px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-image: url(https://i.pinimg.com/736x/87/a6/44/87a6442475ced3e8029581895a9b7185.jpg);
+  background-size: cover;
+  background-position: center;
+}
+.iphone-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.status-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 10;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+.dynamic-island {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 32px;
+  background-color: #000;
+  border-radius: 16px;
+}
+.indicators { display: flex; gap: 6px; }
+
+.iphone-app-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-screen {
+  padding: 44px 10px 90px 10px;
+  justify-content: space-between;
+}
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  padding: 20px;
+}
+.app-icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+.app-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 32px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.app-label {
+  font-size: 12px;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+}
+.dock {
+  width: calc(100% - 20px);
+  margin: 0 auto;
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 24px;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+.dock .app-icon { width: 56px; height: 56px; }
+
+.home-bar-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 34px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 8px;
+  cursor: pointer;
+}
+.home-bar {
+  width: 135px;
+  height: 5px;
+  background-color: rgba(255,255,255,0.8);
+  border-radius: 2.5px;
+}
+.iphone-app-header {
+  padding: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  background-color: rgba(248, 248, 248, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #ddd;
+}
+.messages-app { background-color: #fff; }
+.message-list {
+  flex-grow: 1;
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.message-bubble {
+  padding: 8px 12px;
+  border-radius: 18px;
+  max-width: 75%;
+  word-wrap: break-word;
+}
+.message-bubble.me {
+  background-color: #007aff;
+  color: white;
+  align-self: flex-end;
+}
+.message-bubble.other {
+  background-color: #e5e5ea;
+  color: black;
+  align-self: flex-start;
+}
+.message-input-bar {
+  display: flex;
+  padding: 8px;
+  border-top: 1px solid #ddd;
+  background-color: #f8f8f8;
+}
+.message-input-bar input {
+  flex-grow: 1;
+  border: none;
+  background-color: #e5e5ea;
+  border-radius: 18px;
+  padding: 8px 12px;
+  font-size: 16px;
+}
+.message-input-bar input:focus { outline: none; }
+.message-input-bar button {
+  background-color: #007aff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  margin-left: 8px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.mail-app { background-color: #fff; }
+.email-list { padding: 0 16px; }
+.email-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+}
+.email-sender { font-weight: 600; }
+.email-subject { color: #555; font-size: 14px; }
+
+.camera-app { background-color: #000; justify-content: flex-end; align-items: center; }
+.camera-viewfinder { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+.camera-flash { position: absolute; top:0; left:0; right:0; bottom:0; background: white; opacity: 0.9; animation: flash-anim 0.2s ease-out; }
+@keyframes flash-anim { from { opacity: 0.9; } to { opacity: 0; } }
+
+.camera-controls { z-index: 1; padding: 30px; }
+.shutter-button-outer {
+  width: 70px;
+  height: 70px;
+  background-color: rgba(255,255,255,0.5);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.shutter-button-inner {
+  width: 60px;
+  height: 60px;
+  background-color: #fff;
+  border-radius: 50%;
+}
+
+.generic-media-app { background-color: #fff; }
+.media-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 16px; }
+.media-item { display: flex; flex-direction: column; gap: 8px; }
+.media-artwork {
+  aspect-ratio: 1/1;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 48px;
+}
+.media-artwork.music { background: linear-gradient(135deg, #fa2855, #a32491); color: white; }
+.media-artwork.movie { background: linear-gradient(135deg, #9C27B0, #3F51B5); color: white; }
+.media-title { font-weight: 500; text-align: center; }
+
 
 @media (max-width: 600px) {
   main { padding: 1rem; }
@@ -752,5 +1061,18 @@ main {
       padding: 0;
       margin: -0.5rem 0;
       transform: rotate(90deg);
+  }
+  .iphone-shell {
+      transform: scale(0.9);
+      margin-top: -40px;
+      margin-bottom: -40px;
+  }
+}
+
+@media (max-width: 420px) {
+    .iphone-shell {
+      transform: scale(0.8);
+      margin-top: -80px;
+      margin-bottom: -80px;
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 
 declare var Howl: any;
@@ -13,6 +13,9 @@ const sounds = {
   match: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/11/17/audio_8415a7721d.mp3'] }),
   gameWin: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/01/18/audio_1380845a72.mp3'] }),
   error: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/03/10/audio_51c72a71a0.mp3'] }),
+  shutter: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/01/21/audio_81165b4ebd.mp3'], volume: 0.8 }),
+  messageSent: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/03/15/audio_03a3123653.mp3'], volume: 0.5 }),
+  messageReceived: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/03/10/audio_2e28bb8dc4.mp3'], volume: 0.7 }),
 };
 
 type SoundName = keyof typeof sounds;
@@ -1044,7 +1047,7 @@ const ExchangeRates = () => {
                             id="amount" 
                             value={amount} 
                             onChange={handleAmountChange}
-                            min="0"
+                            min={0}
                         />
                     </div>
                      <div className="converter-group">
@@ -1094,7 +1097,7 @@ const ExchangeRates = () => {
     );
 };
 
-const formatNumber = (num, precision = 4) => {
+const formatNumber = (num: number, precision = 4) => {
     return parseFloat(num.toFixed(precision));
 };
 
@@ -1160,7 +1163,6 @@ const QuadraticSolver = () => {
         });
     };
 
-    // FIX: Explicitly type the event parameter `e` to avoid type inference issues.
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setCoeffs({ ...coeffs, [e.target.name]: e.target.value });
     };
@@ -1265,7 +1267,6 @@ const CubicSolver = () => {
         setSolution({ steps, roots });
     };
     
-    // FIX: Explicitly type the event parameter `e` to avoid type inference issues.
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setCoeffs({ ...coeffs, [e.target.name]: e.target.value });
     };
@@ -1296,9 +1297,230 @@ const CubicSolver = () => {
     );
 };
 
+const LinearSystemSolver = () => {
+    const [coeffs, setCoeffs] = useState({ a1: '', b1: '', c1: '', a2: '', b2: '', c2: '' });
+    const [solution, setSolution] = useState(null);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setCoeffs({ ...coeffs, [e.target.name]: e.target.value });
+    };
+
+    const handleSolve = () => {
+        const a1 = parseFloat(coeffs.a1) || 0;
+        const b1 = parseFloat(coeffs.b1) || 0;
+        const c1 = parseFloat(coeffs.c1) || 0;
+        const a2 = parseFloat(coeffs.a2) || 0;
+        const b2 = parseFloat(coeffs.b2) || 0;
+        const c2 = parseFloat(coeffs.c2) || 0;
+
+        const D = a1 * b2 - a2 * b1;
+        const Dx = c1 * b2 - c2 * b1;
+        const Dy = a1 * c2 - a2 * c1;
+
+        let analysis, roots;
+
+        if (D !== 0) {
+            const x = Dx / D;
+            const y = Dy / D;
+            analysis = `Hệ có nghiệm duy nhất.`;
+            roots = [`x = ${formatNumber(x)}`, `y = ${formatNumber(y)}`];
+        } else {
+            if (Dx === 0 && Dy === 0) {
+                analysis = `Hệ có vô số nghiệm.`;
+                roots = [];
+            } else {
+                analysis = `Hệ vô nghiệm.`;
+                roots = [];
+            }
+        }
+        
+        setSolution({
+            equations: [ `${a1}x + ${b1}y = ${c1}`, `${a2}x + ${b2}y = ${c2}`],
+            determinants: [ `D = a₁b₂ - a₂b₁ = ${formatNumber(D)}`, `Dx = c₁b₂ - c₂b₁ = ${formatNumber(Dx)}`, `Dy = a₁c₂ - a₂c₁ = ${formatNumber(Dy)}`],
+            analysis: analysis,
+            roots: roots
+        });
+    };
+
+    return (
+        <div className="solver-container">
+            <h3>Giải hệ phương trình tuyến tính 2 ẩn</h3>
+            <div className="solver-form linear-system-form">
+                <p>Phương trình 1: a₁x + b₁y = c₁</p>
+                <div className="input-row">
+                    <div className="input-group"><label>a₁ =</label><input type="number" name="a1" value={coeffs.a1} onChange={handleChange} /></div>
+                    <div className="input-group"><label>b₁ =</label><input type="number" name="b1" value={coeffs.b1} onChange={handleChange} /></div>
+                    <div className="input-group"><label>c₁ =</label><input type="number" name="c1" value={coeffs.c1} onChange={handleChange} /></div>
+                </div>
+                 <p>Phương trình 2: a₂x + b₂y = c₂</p>
+                <div className="input-row">
+                    <div className="input-group"><label>a₂ =</label><input type="number" name="a2" value={coeffs.a2} onChange={handleChange} /></div>
+                    <div className="input-group"><label>b₂ =</label><input type="number" name="b2" value={coeffs.b2} onChange={handleChange} /></div>
+                    <div className="input-group"><label>c₂ =</label><input type="number" name="c2" value={coeffs.c2} onChange={handleChange} /></div>
+                </div>
+                <button onClick={handleSolve} className="btn btn-primary">Giải</button>
+            </div>
+            {solution && (
+                 <div className="solution-steps">
+                    <h4>Hệ phương trình:</h4>
+                    {solution.equations.map((eq, i) => <p key={i}>{eq}</p>)}
+
+                    <h4>1. Tính các định thức</h4>
+                    {solution.determinants.map((det, i) => <p key={i}>{det}</p>)}
+                    
+                    <h4>2. Phân tích</h4>
+                    <p>{solution.analysis}</p>
+
+                    <div className="final-result">
+                        <strong>Kết quả:</strong>
+                        {solution.roots.length > 0 ? solution.roots.map((root, i) => <p key={i}>{root}</p>) : <p>Không có nghiệm duy nhất.</p>}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const CalculusSolver = () => {
+    const [mode, setMode] = useState('derivative'); // derivative, integral
+    const [funcStr, setFuncStr] = useState('3x^2 - 5x + 2');
+    const [result, setResult] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    const parsePolynomial = (str: string): {coeff: number, exp: number}[] => {
+        const terms: {coeff: number, exp: number}[] = [];
+        let processedStr = str.replace(/\s/g, '').replace(/-/g, '+-');
+        if (processedStr.startsWith('+-')) {
+            processedStr = processedStr.substring(1);
+        }
+
+        const termStrings = processedStr.split('+').filter(Boolean);
+
+        for (const termStr of termStrings) {
+            if (!termStr.includes('x')) {
+                terms.push({ coeff: parseFloat(termStr), exp: 0 });
+                continue;
+            }
+
+            const parts = termStr.split('x');
+            let coeffStr = parts[0];
+            let expStr = parts[1] ? parts[1].substring(1) : '1';
+
+            let coeff = 1;
+            if (coeffStr === '-') coeff = -1;
+            else if (coeffStr !== '') coeff = parseFloat(coeffStr);
+
+            const exp = parseFloat(expStr);
+
+            if (isNaN(coeff) || isNaN(exp)) {
+                throw new Error("Hàm số không hợp lệ.");
+            }
+            
+            terms.push({ coeff, exp });
+        }
+        return terms;
+    };
+    
+    const formatPolynomial = (terms: {coeff: number, exp: number}[], isIntegral: boolean = false) => {
+        if (terms.length === 0) return isIntegral ? 'C' : '0';
+        
+        const sortedTerms = terms.sort((a, b) => b.exp - a.exp);
+        
+        let str = '';
+        for (let i = 0; i < sortedTerms.length; i++) {
+            const term = sortedTerms[i];
+            if (term.coeff === 0) continue;
+
+            const coeff = formatNumber(term.coeff, 2);
+            const exp = term.exp;
+            
+            if (i > 0 && coeff > 0) {
+                str += ' + ';
+            } else if (coeff < 0) {
+                str += i > 0 ? ' - ' : '-';
+            }
+            
+            const absCoeff = Math.abs(coeff);
+            
+            if (absCoeff !== 1 || exp === 0) {
+                str += absCoeff;
+            }
+            
+            if (exp > 0) {
+                str += 'x';
+                if (exp > 1) {
+                    str += `^${exp}`;
+                }
+            }
+        }
+        if (isIntegral) {
+            str += ' + C';
+        }
+        return str.trim() || (isIntegral ? 'C' : '0');
+    };
+
+    const handleCalculate = () => {
+        try {
+            setError(null);
+            const parsedTerms = parsePolynomial(funcStr);
+            let resultTerms: {coeff: number, exp: number}[];
+
+            if (mode === 'derivative') {
+                resultTerms = parsedTerms.map(({ coeff, exp }) => ({
+                    coeff: coeff * exp,
+                    exp: exp - 1
+                })).filter(t => t.exp >= 0);
+                setResult(formatPolynomial(resultTerms));
+            } else { // integral
+                resultTerms = parsedTerms.map(({ coeff, exp }) => ({
+                    coeff: coeff / (exp + 1),
+                    exp: exp + 1
+                }));
+                setResult(formatPolynomial(resultTerms, true));
+            }
+
+        } catch (e) {
+            setError((e as Error).message);
+            setResult(null);
+        }
+    };
+
+    return (
+        <div className="solver-container">
+            <h3>Vi Tích Phân (Hàm đa thức đơn giản)</h3>
+             <div className="calculus-mode-selector">
+                <button onClick={() => setMode('derivative')} className={mode === 'derivative' ? 'active' : ''}>Tính Đạo hàm</button>
+                <button onClick={() => setMode('integral')} className={mode === 'integral' ? 'active' : ''}>Tính Tích phân</button>
+            </div>
+            <div className="solver-form calculus-form">
+                <div className="input-group">
+                    <label htmlFor="func-input">f(x) =</label>
+                    <input 
+                        type="text" 
+                        id="func-input"
+                        className="func-input"
+                        value={funcStr} 
+                        onChange={e => setFuncStr(e.target.value)}
+                        placeholder="e.g., 4x^3 - 2x + 7"
+                    />
+                </div>
+                <button onClick={handleCalculate} className="btn btn-primary">Tính</button>
+            </div>
+            {error && <p className="status-message lose">{error}</p>}
+            {result && (
+                 <div className="solution-steps">
+                    <h4>{mode === 'derivative' ? 'Đạo hàm của hàm số là:' : 'Tích phân bất định của hàm số là:'}</h4>
+                    <div className="final-result">
+                        <p>{mode === 'derivative' ? "f'(x) =" : "∫f(x)dx ="} {result}</p>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 const StatsCalculator = () => {
     const [input, setInput] = useState('');
-    // FIX: Explicitly type the `results` state to handle both `string` and `number` values from the calculation, preventing rendering errors.
     const [results, setResults] = useState<Record<string, string | number> | null>(null);
 
     const handleCalculate = () => {
@@ -1321,7 +1543,6 @@ const StatsCalculator = () => {
             median = numbers[mid];
         }
 
-        // FIX: Explicitly type the accumulator in `reduce` to ensure `counts` has the correct type (`Record<string, number>`), preventing downstream errors with `Object.values`.
         const counts = numbers.reduce((acc: Record<string, number>, val) => {
             acc[val] = (acc[val] || 0) + 1;
             return acc;
@@ -1366,7 +1587,7 @@ const StatsCalculator = () => {
                     {Object.entries(results).map(([key, value]) => (
                         <div key={key} className="rate-item">
                             <h4>{key}</h4>
-                            <p className="price">{value}</p>
+                            <p className="price">{value.toString()}</p>
                         </div>
                     ))}
                 </div>
@@ -1394,6 +1615,12 @@ const MathSolver: React.FC<SoundProps> = ({ playSound }) => {
         <button onClick={() => handleNavClick('cubic')} className={activeSolver === 'cubic' ? 'active' : ''}>
           PT Bậc 3
         </button>
+        <button onClick={() => handleNavClick('linear-system')} className={activeSolver === 'linear-system' ? 'active' : ''}>
+          Hệ PT
+        </button>
+        <button onClick={() => handleNavClick('calculus')} className={activeSolver === 'calculus' ? 'active' : ''}>
+          Vi Tích Phân
+        </button>
         <button onClick={() => handleNavClick('stats')} className={activeSolver === 'stats' ? 'active' : ''}>
           Thống Kê
         </button>
@@ -1401,10 +1628,251 @@ const MathSolver: React.FC<SoundProps> = ({ playSound }) => {
       <div className="solver-content">
         {activeSolver === 'quadratic' && <QuadraticSolver />}
         {activeSolver === 'cubic' && <CubicSolver />}
+        {activeSolver === 'linear-system' && <LinearSystemSolver />}
+        {activeSolver === 'calculus' && <CalculusSolver />}
         {activeSolver === 'stats' && <StatsCalculator />}
       </div>
     </div>
   );
+};
+
+// --- iPhone Simulator ---
+
+const IPHONE_APPS = {
+    messages: { name: 'Messages', icon: '💬', color: '#4CAF50' },
+    mail: { name: 'Mail', icon: '✉️', color: '#007AFF' },
+    camera: { name: 'Camera', icon: '📷', color: '#333' },
+    music: { name: 'Music', icon: '🎵', color: '#FA2855' },
+    movies: { name: 'Movies', icon: '🎬', color: '#9C27B0' },
+};
+
+const DOCK_APPS = ['messages', 'mail', 'camera', 'music'];
+
+const StatusBar = () => {
+    const [time, setTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => setTime(new Date()), 1000 * 60); // Update every minute
+        return () => clearInterval(timer);
+    }, []);
+
+    return (
+        <div className="status-bar">
+            <div className="time">{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+            <div className="dynamic-island"></div>
+            <div className="indicators">
+                <span>📶</span>
+                <span>LTE</span>
+                <span>🔋</span>
+            </div>
+        </div>
+    );
+};
+
+const HomeScreen = ({ openApp }: { openApp: (appId: string) => void }) => {
+    return (
+        <div className="iphone-app-screen home-screen">
+            <div className="app-grid">
+                {Object.entries(IPHONE_APPS).map(([id, { name, icon, color }]) => (
+                    <div key={id} className="app-icon-container" onClick={() => openApp(id)}>
+                        <div className="app-icon" style={{ backgroundColor: color }}>{icon}</div>
+                        <span className="app-label">{name}</span>
+                    </div>
+                ))}
+            </div>
+            <div className="dock">
+                {DOCK_APPS.map(id => (
+                    <div key={id} className="app-icon-container" onClick={() => openApp(id)}>
+                        <div className="app-icon" style={{ backgroundColor: IPHONE_APPS[id].color }}>{IPHONE_APPS[id].icon}</div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const MessagesApp: React.FC<SoundProps> = ({ playSound }) => {
+    const [messages, setMessages] = useState([
+        { id: 1, text: "Chào bạn, khoẻ không?", sender: 'other' },
+        { id: 2, text: "Mình khoẻ, cảm ơn bạn!", sender: 'me' },
+    ]);
+    const [input, setInput] = useState('');
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    const handleSend = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!input.trim()) return;
+        playSound('messageSent');
+        const newMessages = [...messages, { id: Date.now(), text: input, sender: 'me' }];
+        setMessages(newMessages);
+        setInput('');
+
+        setTimeout(() => {
+            playSound('messageReceived');
+            const replies = ["Tuyệt vời!", "Okay, có gì mới không?", "Hmm, thú vị đó.", "Mình hiểu rồi."];
+            const reply = replies[Math.floor(Math.random() * replies.length)];
+            setMessages(prev => [...prev, { id: Date.now() + 1, text: reply, sender: 'other' }]);
+        }, 1500);
+    };
+
+    return (
+        <div className="iphone-app-screen messages-app">
+            <div className="iphone-app-header">Messages</div>
+            <div className="message-list">
+                {messages.map(msg => (
+                    <div key={msg.id} className={`message-bubble ${msg.sender}`}>
+                        {msg.text}
+                    </div>
+                ))}
+                <div ref={scrollRef}></div>
+            </div>
+            <form className="message-input-bar" onSubmit={handleSend}>
+                <input type="text" placeholder="Type a message" value={input} onChange={e => setInput(e.target.value)} />
+                <button type="submit">↑</button>
+            </form>
+        </div>
+    );
+};
+
+const MailApp = () => {
+    const mockEmails = [
+        { id: 1, sender: 'Team Apple', subject: 'Welcome to your new iPhone!', body: '...' },
+        { id: 2, sender: 'Your Bank', subject: 'Security Alert', body: '...' },
+        { id: 3, sender: 'Mom', subject: 'Dinner tonight?', body: '...' },
+        { id: 4, sender: 'LinkedIn', subject: 'You appeared in 9 searches this week', body: '...' },
+    ];
+    return (
+        <div className="iphone-app-screen mail-app">
+            <div className="iphone-app-header">Inbox</div>
+            <div className="email-list">
+                {mockEmails.map(email => (
+                    <div key={email.id} className="email-item">
+                        <div className="email-sender">{email.sender}</div>
+                        <div className="email-subject">{email.subject}</div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const CameraApp: React.FC<SoundProps> = ({ playSound }) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [flash, setFlash] = useState(false);
+
+    useEffect(() => {
+        let stream: MediaStream | null = null;
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(s => {
+                stream = s;
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                }
+            })
+            .catch(err => console.error("Camera access denied:", err));
+
+        return () => {
+            stream?.getTracks().forEach(track => track.stop());
+        };
+    }, []);
+
+    const handleShutter = () => {
+      playSound('shutter');
+      setFlash(true);
+      setTimeout(() => setFlash(false), 200);
+    }
+
+    return (
+        <div className="iphone-app-screen camera-app">
+            <video ref={videoRef} className="camera-viewfinder" autoPlay playsInline muted></video>
+            {flash && <div className="camera-flash"></div>}
+            <div className="camera-controls">
+                <div className="shutter-button-outer" onClick={handleShutter}>
+                    <div className="shutter-button-inner"></div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const MusicApp = () => {
+    const albums = [ 'Cosmic', 'Starlight', 'Eclipse', 'Neon Dreams', 'Ocean Drive', 'Midnight City' ];
+    return (
+        <div className="iphone-app-screen generic-media-app">
+            <div className="iphone-app-header">Music</div>
+            <div className="media-grid">
+                {albums.map((album, i) => (
+                    <div key={i} className="media-item">
+                        <div className="media-artwork music" style={{ filter: `hue-rotate(${i * 60}deg)` }}>🎵</div>
+                        <div className="media-title">{album}</div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
+};
+
+const MoviesApp = () => {
+    const movies = [ 'Inception', 'The Matrix', 'Interstellar', 'Blade Runner', 'Avatar', 'Gravity' ];
+     return (
+        <div className="iphone-app-screen generic-media-app">
+            <div className="iphone-app-header">Movies</div>
+            <div className="media-grid">
+                {movies.map((movie, i) => (
+                    <div key={i} className="media-item">
+                        <div className="media-artwork movie" style={{ filter: `hue-rotate(${i * 60}deg)` }}>🎬</div>
+                        <div className="media-title">{movie}</div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
+};
+
+const IPhoneShell: React.FC<SoundProps> = ({ playSound }) => {
+    const [activeApp, setActiveApp] = useState('home');
+
+    const openApp = (appId: string) => {
+        playSound('click');
+        setActiveApp(appId);
+    };
+
+    const goHome = () => {
+        playSound('click');
+        setActiveApp('home');
+    }
+
+    const renderApp = () => {
+        switch(activeApp) {
+            case 'home': return <HomeScreen openApp={openApp} />;
+            case 'messages': return <MessagesApp playSound={playSound} />;
+            case 'mail': return <MailApp />;
+            case 'camera': return <CameraApp playSound={playSound}/>;
+            case 'music': return <MusicApp />;
+            case 'movies': return <MoviesApp />;
+            default: return <HomeScreen openApp={openApp} />;
+        }
+    };
+
+    return (
+        <div className="iphone-shell-container">
+            <div className="iphone-shell">
+                <div className="iphone-screen">
+                    <StatusBar />
+                    <div className="iphone-content">
+                        {renderApp()}
+                    </div>
+                    <div className="home-bar-container" onClick={goHome}>
+                        <div className="home-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
 };
 
 const App = () => {
@@ -1433,6 +1901,9 @@ const App = () => {
             </button>
         </div>
         <nav>
+          <button onClick={() => handleNavClick('iphone')} className={activeApp === 'iphone' ? 'active' : ''}>
+            iPhone 17
+          </button>
           <button onClick={() => handleNavClick('bauCua')} className={activeApp === 'bauCua' ? 'active' : ''}>
             Bầu Cua
           </button>
@@ -1460,6 +1931,7 @@ const App = () => {
         </nav>
       </header>
       <main>
+        {activeApp === 'iphone' && <IPhoneShell playSound={playSound} />}
         {activeApp === 'bauCua' && <BauCuaGame balance={balance} setBalance={setBalance} playSound={playSound} />}
         {activeApp === 'diceRoller' && <DiceRoller balance={balance} setBalance={setBalance} playSound={playSound} />}
         {activeApp === 'sudoku' && <SudokuGame playSound={playSound}/>}

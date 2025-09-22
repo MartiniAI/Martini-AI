@@ -1,5 +1,7 @@
 {
   "name": "Trò Chơi May Rủi",
-  "description": "Một trung tâm giải trí với Bầu Cua, Xí Ngầu, Sudoku, Thử Thách Trí Nhớ và các công cụ tiện ích như Giải Toán, Lịch Âm, Thời Tiết.",
-  "requestFramePermissions": []
+  "description": "Một trung tâm giải trí với Bầu Cua, Xí Ngầu, Sudoku, Thử Thách Trí Nhớ và các công cụ tiện ích như Giải Toán, Lịch Âm, Thời Tiết, và Giả lập iPhone 17.",
+  "requestFramePermissions": [
+    "camera"
+  ]
 }
