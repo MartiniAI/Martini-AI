@@ -1,6 +1,26 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 
+declare var Howl: any;
+
+const sounds = {
+  click: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/03/15/audio_2b2c14a277.mp3'], volume: 0.7 }),
+  bet: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2021/08/09/audio_59a242f34e.mp3'], volume: 0.7 }),
+  shake: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2021/08/04/audio_16cc69f893.mp3'] }),
+  win: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/03/10/audio_c3b092e85a.mp3'] }),
+  lose: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/03/10/audio_c6f2293f77.mp3'] }),
+  flip: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/03/15/audio_131165f17d.mp3'], volume: 0.6 }),
+  match: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/11/17/audio_8415a7721d.mp3'] }),
+  gameWin: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/01/18/audio_1380845a72.mp3'] }),
+  error: new Howl({ src: ['https://cdn.pixabay.com/download/audio/2022/03/10/audio_51c72a71a0.mp3'] }),
+};
+
+type SoundName = keyof typeof sounds;
+
+interface SoundProps {
+  playSound: (name: SoundName) => void;
+}
+
 const BAU_CUA_ITEMS = [
   { id: 'nai', name: 'Nai', emoji: '🦌' },
   { id: 'bau', name: 'Bầu', emoji: '🎃' },
@@ -12,12 +32,12 @@ const BAU_CUA_ITEMS = [
 
 const BET_AMOUNT = 10;
 
-interface GameProps {
+interface GameProps extends SoundProps {
   balance: number;
   setBalance: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance }) => {
+const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance, playSound }) => {
   const [bets, setBets] = useState<Record<string, number>>({});
   const [results, setResults] = useState<string[]>([]);
   const [isShaking, setIsShaking] = useState(false);
@@ -31,12 +51,14 @@ const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance }) => {
       setMessage("Không đủ tiền để cược!");
       return;
     }
+    playSound('bet');
     setBalance(prev => prev - BET_AMOUNT);
     setBets(prev => ({ ...prev, [itemId]: (prev[itemId] || 0) + BET_AMOUNT }));
   };
 
   const clearBets = () => {
     if (isShaking) return;
+    playSound('click');
     setBalance(prev => prev + totalBet);
     setBets({});
   };
@@ -44,6 +66,7 @@ const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance }) => {
   const handleShake = () => {
     if (totalBet === 0 || isShaking) return;
 
+    playSound('shake');
     setIsShaking(true);
     setResults([]);
     setMessage('Đang lắc...');
@@ -68,8 +91,10 @@ const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance }) => {
       
       if (netChange > 0) {
         setMessage(`Thắng ${netChange}!`);
+        playSound('win');
       } else if (netChange < 0) {
         setMessage(`Thua ${-netChange}.`);
+        playSound('lose');
       } else {
         setMessage('Hòa vốn!');
       }
@@ -170,7 +195,7 @@ const DICE_ITEMS: DiceItem[] = [
   { id: '6', name: 'Sáu', emoji: <SvgDice dots={6} /> },
 ];
 
-const DiceRoller: React.FC<GameProps> = ({ balance, setBalance }) => {
+const DiceRoller: React.FC<GameProps> = ({ balance, setBalance, playSound }) => {
     const [bets, setBets] = useState<Record<string, number>>({});
     const [result, setResult] = useState<number | null>(null);
     const [isRolling, setIsRolling] = useState(false);
@@ -184,12 +209,14 @@ const DiceRoller: React.FC<GameProps> = ({ balance, setBalance }) => {
           setMessage("Không đủ tiền để cược!");
           return;
         }
+        playSound('bet');
         setBalance(prev => prev - BET_AMOUNT);
         setBets(prev => ({ ...prev, [itemId]: (prev[itemId] || 0) + BET_AMOUNT }));
     };
 
     const clearBets = () => {
         if (isRolling) return;
+        playSound('click');
         setBalance(prev => prev + totalBet);
         setBets({});
     };
@@ -197,6 +224,7 @@ const DiceRoller: React.FC<GameProps> = ({ balance, setBalance }) => {
     const handleRoll = () => {
         if (totalBet === 0 || isRolling) return;
 
+        playSound('shake');
         setIsRolling(true);
         setResult(null);
         setMessage('Đang đổ...');
@@ -216,8 +244,10 @@ const DiceRoller: React.FC<GameProps> = ({ balance, setBalance }) => {
             
             if (netChange > 0) {
                 setMessage(`Thắng ${netChange}!`);
+                playSound('win');
             } else if (netChange < 0) {
                 setMessage(`Thua ${-netChange}. Chúc may mắn lần sau!`);
+                playSound('lose');
             } else {
                 setMessage('Bạn không cược nên không có gì thay đổi.');
             }
@@ -345,7 +375,7 @@ const generateSudoku = (difficulty: Difficulty) => {
     return { puzzle, solution };
 };
 
-const SudokuGame: React.FC = () => {
+const SudokuGame: React.FC<SoundProps> = ({ playSound }) => {
     const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
     const [initialBoard, setInitialBoard] = useState<Board | null>(null);
     const [solutionBoard, setSolutionBoard] = useState<Board | null>(null);
@@ -355,6 +385,7 @@ const SudokuGame: React.FC = () => {
     const [message, setMessage] = useState('');
 
     const startGame = useCallback((level: Difficulty) => {
+        playSound('click');
         const { puzzle, solution } = generateSudoku(level);
         setDifficulty(level);
         setInitialBoard(puzzle);
@@ -363,7 +394,7 @@ const SudokuGame: React.FC = () => {
         setSelectedCell(null);
         setValidation(null);
         setMessage('');
-    }, []);
+    }, [playSound]);
 
     const handleCellClick = (row: number, col: number) => {
         if (initialBoard && initialBoard[row][col] === null) {
@@ -373,6 +404,7 @@ const SudokuGame: React.FC = () => {
     
     const handleNumberInput = (num: number) => {
         if (selectedCell && currentBoard) {
+            playSound('click');
             const newBoard = JSON.parse(JSON.stringify(currentBoard));
             newBoard[selectedCell.row][selectedCell.col] = num;
             setCurrentBoard(newBoard);
@@ -382,6 +414,7 @@ const SudokuGame: React.FC = () => {
 
     const handleErase = () => {
         if (selectedCell && currentBoard) {
+            playSound('click');
             const newBoard = JSON.parse(JSON.stringify(currentBoard));
             newBoard[selectedCell.row][selectedCell.col] = null;
             setCurrentBoard(newBoard);
@@ -390,6 +423,7 @@ const SudokuGame: React.FC = () => {
     };
     
     const handleCheck = () => {
+        playSound('click');
         if (!currentBoard || !solutionBoard) return;
         const newValidation: ValidationBoard = Array(9).fill(null).map(() => Array(9).fill('empty'));
         let isComplete = true;
@@ -412,18 +446,27 @@ const SudokuGame: React.FC = () => {
         setValidation(newValidation);
         if (!hasErrors && isComplete) {
             setMessage('Chúc mừng! Bạn đã giải đúng!');
+            playSound('gameWin');
         } else if (hasErrors) {
             setMessage('Có lỗi sai, hãy kiểm tra lại!');
+            playSound('error');
         } else {
             setMessage('Các số đã điền đều đúng, tiếp tục nào!');
+            playSound('match');
         }
     };
     
     const handleSolve = () => {
+        playSound('click');
         setCurrentBoard(solutionBoard);
         setValidation(null);
         setMessage('Bảng đã được giải.');
     };
+
+    const handleDifficultyChange = () => {
+        playSound('click');
+        setDifficulty(null);
+    }
 
     if (!difficulty || !currentBoard) {
         return (
@@ -479,7 +522,7 @@ const SudokuGame: React.FC = () => {
                 <button onClick={handleCheck} className="btn btn-primary">Kiểm tra</button>
                 <button onClick={handleSolve} className="btn btn-secondary">Giải bài</button>
                 <button onClick={() => startGame(difficulty)} className="btn btn-secondary">Chơi lại</button>
-                <button onClick={() => setDifficulty(null)} className="btn btn-secondary">Đổi cấp độ</button>
+                <button onClick={handleDifficultyChange} className="btn btn-secondary">Đổi cấp độ</button>
             </div>
             <div className={`status-message ${message.includes('Chúc mừng') ? 'win' : message.includes('lỗi') ? 'lose' : ''}`}>{message}</div>
         </div>
@@ -501,7 +544,7 @@ interface Card {
   type: string;
 }
 
-const MemoryGame: React.FC = () => {
+const MemoryGame: React.FC<SoundProps> = ({ playSound }) => {
     const [difficulty, setDifficulty] = useState<MemoryDifficulty | null>(null);
     const [cards, setCards] = useState<Card[]>([]);
     const [flippedCards, setFlippedCards] = useState<number[]>([]);
@@ -510,6 +553,7 @@ const MemoryGame: React.FC = () => {
     const [isChecking, setIsChecking] = useState(false);
 
     const startGame = useCallback((level: MemoryDifficulty) => {
+        playSound('click');
         const { size } = MEMORY_DIFFICULTY_LEVELS[level];
         const monsterSet = MONSTERS.slice(0, size);
         const duplicatedMonsters = [...monsterSet, ...monsterSet];
@@ -520,12 +564,13 @@ const MemoryGame: React.FC = () => {
         setFlippedCards([]);
         setMatchedPairs([]);
         setMoves(0);
-    }, []);
+    }, [playSound]);
 
     const handleCardClick = (index: number) => {
         if (isChecking || flippedCards.includes(index) || matchedPairs.includes(cards[index].type)) {
             return;
         }
+        playSound('flip');
 
         const newFlippedCards = [...flippedCards, index];
         setFlippedCards(newFlippedCards);
@@ -538,6 +583,7 @@ const MemoryGame: React.FC = () => {
                 setMatchedPairs(prev => [...prev, cards[firstIndex].type]);
                 setFlippedCards([]);
                 setIsChecking(false);
+                playSound('match');
             } else {
                 setTimeout(() => {
                     setFlippedCards([]);
@@ -547,7 +593,18 @@ const MemoryGame: React.FC = () => {
         }
     };
 
+    const handleDifficultyChange = () => {
+        playSound('click');
+        setDifficulty(null);
+    }
+    
     const isGameWon = difficulty && matchedPairs.length === MEMORY_DIFFICULTY_LEVELS[difficulty].size;
+    
+    useEffect(() => {
+        if (isGameWon) {
+            playSound('gameWin');
+        }
+    }, [isGameWon, playSound]);
 
     if (!difficulty) {
          return (
@@ -580,7 +637,7 @@ const MemoryGame: React.FC = () => {
                     <p>Bạn đã hoàn thành trong {moves} lần lật.</p>
                     <div className="controls">
                       <button onClick={() => startGame(difficulty)} className="btn btn-primary">Chơi lại</button>
-                      <button onClick={() => setDifficulty(null)} className="btn btn-secondary">Đổi cấp độ</button>
+                      <button onClick={handleDifficultyChange} className="btn btn-secondary">Đổi cấp độ</button>
                     </div>
                 </div>
             ) : (
@@ -599,7 +656,7 @@ const MemoryGame: React.FC = () => {
                     })}
                 </div>
                 <div className="controls">
-                    <button onClick={() => setDifficulty(null)} className="btn btn-secondary">Đổi cấp độ</button>
+                    <button onClick={handleDifficultyChange} className="btn btn-secondary">Đổi cấp độ</button>
                 </div>
                 </>
              )}
@@ -611,31 +668,48 @@ const MemoryGame: React.FC = () => {
 const App = () => {
   const [activeGame, setActiveGame] = useState('bauCua');
   const [balance, setBalance] = useState<number>(1000);
+  const [isMuted, setIsMuted] = useState(false);
+
+  const playSound = useCallback((name: SoundName) => {
+      if (!isMuted) {
+          sounds[name].play();
+      }
+  }, [isMuted]);
+
+  const handleNavClick = (game: string) => {
+    playSound('click');
+    setActiveGame(game);
+  }
 
   return (
     <div className="app-container">
       <header>
-        <h1>Trò Chơi May Rủi</h1>
+        <div className="header-title-container">
+            <h1>Trò Chơi May Rủi</h1>
+            <button className="mute-btn" onClick={() => setIsMuted(prev => !prev)} aria-label={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}>
+                {isMuted ? '🔇' : '🔊'}
+            </button>
+        </div>
         <nav>
-          <button onClick={() => setActiveGame('bauCua')} className={activeGame === 'bauCua' ? 'active' : ''}>
+          <button onClick={() => handleNavClick('bauCua')} className={activeGame === 'bauCua' ? 'active' : ''}>
             Bầu Cua
           </button>
-          <button onClick={() => setActiveGame('diceRoller')} className={activeGame === 'diceRoller' ? 'active' : ''}>
+          <button onClick={() => handleNavClick('diceRoller')} className={activeGame === 'diceRoller' ? 'active' : ''}>
             Xí Ngầu
           </button>
-          <button onClick={() => setActiveGame('sudoku')} className={activeGame === 'sudoku' ? 'active' : ''}>
+          <button onClick={() => handleNavClick('sudoku')} className={activeGame === 'sudoku' ? 'active' : ''}>
             Sudoku
           </button>
-          <button onClick={() => setActiveGame('memory')} className={activeGame === 'memory' ? 'active' : ''}>
+          <button onClick={() => handleNavClick('memory')} className={activeGame === 'memory' ? 'active' : ''}>
             Trí Nhớ
           </button>
         </nav>
       </header>
       <main>
-        {activeGame === 'bauCua' && <BauCuaGame balance={balance} setBalance={setBalance} />}
-        {activeGame === 'diceRoller' && <DiceRoller balance={balance} setBalance={setBalance} />}
-        {activeGame === 'sudoku' && <SudokuGame />}
-        {activeGame === 'memory' && <MemoryGame />}
+        {activeGame === 'bauCua' && <BauCuaGame balance={balance} setBalance={setBalance} playSound={playSound} />}
+        {activeGame === 'diceRoller' && <DiceRoller balance={balance} setBalance={setBalance} playSound={playSound} />}
+        {activeGame === 'sudoku' && <SudokuGame playSound={playSound}/>}
+        {activeGame === 'memory' && <MemoryGame playSound={playSound} />}
       </main>
     </div>
   );

@@ -61,9 +61,42 @@ header {
   background: linear-gradient(45deg, #007bff, #0056b3);
 }
 
+.header-title-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
 header h1 {
-  margin-bottom: 0.5rem;
+  margin: 0;
   font-size: 2rem;
+}
+
+.mute-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: 2px solid white;
+    color: white;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    transition: background-color 0.2s;
+}
+
+.mute-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 nav {
@@ -466,5 +499,14 @@ main {
   }
   .card-face {
     font-size: 2rem;
+  }
+  .header-title-container {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .mute-btn {
+    position: static;
+    transform: none;
+    margin-top: 0.5rem;
   }
 }
