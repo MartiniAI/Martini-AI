@@ -1,5 +1,4 @@
 
-
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -678,7 +677,6 @@ const MemoryGame: React.FC<SoundProps> = ({ playSound }) => {
                 setIsNewHighScore(true);
                 const newHighScores = { ...highScores, [difficulty!]: moves };
                 setHighScores(newHighScores);
-// Fix: Added curly braces to the catch block for correct syntax.
                 try {
                     localStorage.setItem('memoryHighScores', JSON.stringify(newHighScores));
                 } catch (error) {
@@ -874,7 +872,7 @@ const lunarConverter = {
 const LunarCalendar = () => {
     const today = new Date().toISOString().split('T')[0];
     const [date, setDate] = useState(today);
-    const [lunarResult, setLunarResult] = useState(null);
+    const [lunarResult, setLunarResult] = useState<any>(null);
 
     const handleConvert = useCallback(() => {
         const [yy, mm, dd] = date.split('-').map(Number);
@@ -934,7 +932,7 @@ const WeatherForecast = () => {
     const [city, setCity] = useState(CITIES[0].name);
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [time, setTime] = useState(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
-    const [weather, setWeather] = useState(null);
+    const [weather, setWeather] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -953,11 +951,11 @@ const WeatherForecast = () => {
             }
             setIsLoading(false);
         }, 500);
-    }, [city, date, time]); // Re-fetch if criteria change
+    }, []);
 
     useEffect(() => {
         fetchWeather();
-    }, [city]); // Fetch on initial city change
+    }, [city, fetchWeather]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -1144,7 +1142,7 @@ const formatNumber = (num: number, precision = 4) => {
 
 const QuadraticSolver = () => {
     const [coeffs, setCoeffs] = useState<{ a: string | number; b: string | number; c: string | number; }>({ a: '', b: '', c: '' });
-    const [solution, setSolution] = useState(null);
+    const [solution, setSolution] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
 
     const handleSolve = () => {
@@ -1253,7 +1251,7 @@ const QuadraticSolver = () => {
 
                     <div className="final-result">
                         <strong>Kết quả:</strong>
-                        {solution.roots.map((root, i) => <p key={i}>{root}</p>)}
+                        {solution.roots.map((root: string, i: number) => <p key={i}>{root}</p>)}
                     </div>
                 </div>
             )}
@@ -1263,7 +1261,7 @@ const QuadraticSolver = () => {
 
 const CubicSolver = () => {
     const [coeffs, setCoeffs] = useState<{ a: string | number; b: string | number; c: string | number; d: string | number; }>({ a: '', b: '', c: '', d: '' });
-    const [solution, setSolution] = useState(null);
+    const [solution, setSolution] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
 
     const handleSolve = () => {
@@ -1357,10 +1355,10 @@ const CubicSolver = () => {
                  <div className="solution-steps">
                      {solution.message ? <p>{solution.message}</p> : <>
                         <h4>Các bước giải:</h4>
-                        {solution.steps.map((step, i) => <p key={i}>{i+1}. {step}</p>)}
+                        {solution.steps.map((step: string, i: number) => <p key={i}>{i+1}. {step}</p>)}
                         <div className="final-result">
                             <strong>Kết quả:</strong>
-                            {solution.roots.map((root, i) => <p key={i}>{root}</p>)}
+                            {solution.roots.map((root: string, i: number) => <p key={i}>{root}</p>)}
                         </div>
                      </>}
                 </div>
@@ -1371,7 +1369,7 @@ const CubicSolver = () => {
 
 const LinearSystemSolver = () => {
     const [coeffs, setCoeffs] = useState<{ a1: string | number; b1: string | number; c1: string | number; a2: string | number; b2: string | number; c2: string | number; }>({ a1: '', b1: '', c1: '', a2: '', b2: '', c2: '' });
-    const [solution, setSolution] = useState(null);
+    const [solution, setSolution] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1445,17 +1443,17 @@ const LinearSystemSolver = () => {
             {solution && (
                  <div className="solution-steps">
                     <h4>Hệ phương trình:</h4>
-                    {solution.equations.map((eq, i) => <p key={i}>{eq}</p>)}
+                    {solution.equations.map((eq: string, i: number) => <p key={i}>{eq}</p>)}
 
                     <h4>1. Tính các định thức</h4>
-                    {solution.determinants.map((det, i) => <p key={i}>{det}</p>)}
+                    {solution.determinants.map((det: string, i: number) => <p key={i}>{det}</p>)}
                     
                     <h4>2. Phân tích</h4>
                     <p>{solution.analysis}</p>
 
                     <div className="final-result">
                         <strong>Kết quả:</strong>
-                        {solution.roots.length > 0 ? solution.roots.map((root, i) => <p key={i}>{root}</p>) : <p>Không có nghiệm duy nhất.</p>}
+                        {solution.roots.length > 0 ? solution.roots.map((root: string, i: number) => <p key={i}>{root}</p>) : <p>Không có nghiệm duy nhất.</p>}
                     </div>
                 </div>
             )}
@@ -1463,7 +1461,7 @@ const LinearSystemSolver = () => {
     );
 };
 
-const CalculusSolver = () => {
+const CalculusSolver: React.FC<SoundProps> = ({ playSound }) => {
     const [mode, setMode] = useState('derivative'); // derivative, integral
     const [funcStr, setFuncStr] = useState('3x^2 - 5x + 2');
     const [result, setResult] = useState<string | null>(null);
@@ -1567,40 +1565,32 @@ const CalculusSolver = () => {
                 }));
                 setResult(formatPolynomial(resultTerms, true));
             }
-
-        } catch (e) {
-            setError((e as Error).message);
-            setResult(null);
+        } catch (e: any) {
+            setError(e.message);
+            playSound('error');
         }
     };
-
+    
     return (
         <div className="solver-container">
-            <h3>Vi Tích Phân (Hàm đa thức đơn giản)</h3>
-             <div className="calculus-mode-selector">
-                <button onClick={() => setMode('derivative')} className={mode === 'derivative' ? 'active' : ''}>Tính Đạo hàm</button>
-                <button onClick={() => setMode('integral')} className={mode === 'integral' ? 'active' : ''}>Tính Tích phân</button>
+            <div className="calculus-mode-selector">
+                <button onClick={() => setMode('derivative')} className={`btn ${mode === 'derivative' ? 'active' : ''}`}>Đạo hàm</button>
+                <button onClick={() => setMode('integral')} className={`btn ${mode === 'integral' ? 'active' : ''}`}>Nguyên hàm</button>
             </div>
+            <h3>Tính {mode === 'derivative' ? 'Đạo hàm' : 'Nguyên hàm'} của Đa thức</h3>
             <div className="solver-form calculus-form">
                 <div className="input-group">
-                    <label htmlFor="func-input">f(x) =</label>
-                    <input 
-                        type="text" 
-                        id="func-input"
-                        className="func-input"
-                        value={funcStr} 
-                        onChange={e => setFuncStr(e.target.value)}
-                        placeholder="e.g., 4x^3 - 2x + 7"
-                    />
+                    <label>f(x) =</label>
+                    <input type="text" value={funcStr} onChange={e => setFuncStr(e.target.value)} placeholder="e.g., 3x^2 - 5x + 2" className="func-input" />
                 </div>
                 <button onClick={handleCalculate} className="btn btn-primary">Tính</button>
             </div>
-            {error && <p className="status-message lose">{error}</p>}
+            {error && <div className="status-message lose">{error}</div>}
             {result && (
                  <div className="solution-steps">
-                    <h4>{mode === 'derivative' ? 'Đạo hàm của hàm số là:' : 'Tích phân bất định của hàm số là:'}</h4>
+                    <h4>Kết quả:</h4>
                     <div className="final-result">
-                        <p>{mode === 'derivative' ? "f'(x) =" : "∫f(x)dx ="} {result}</p>
+                        <p>{mode === 'derivative' ? "f'(x) = " : "∫f(x)dx = "}{result}</p>
                     </div>
                 </div>
             )}
@@ -1608,181 +1598,164 @@ const CalculusSolver = () => {
     );
 };
 
-const StatsCalculator = () => {
-    const [input, setInput] = useState('');
-    const [results, setResults] = useState<Record<string, string | number> | null>(null);
-    const [error, setError] = useState<string | null>(null);
+const MathSolver: React.FC<SoundProps> = ({ playSound }) => {
+    const [solver, setSolver] = useState('quadratic');
 
-    const handleCalculate = () => {
-        setResults(null);
-        setError(null);
-        const numbers = input.split(/[\s,]+/).filter(Boolean).map(Number).filter(n => !isNaN(n));
-        
-        if (input.trim() === '') {
-            setError("Vui lòng nhập vào một dãy số.");
-            return;
+    const renderSolver = () => {
+        switch (solver) {
+            case 'quadratic': return <QuadraticSolver />;
+            case 'cubic': return <CubicSolver />;
+            case 'linear-system': return <LinearSystemSolver />;
+            case 'calculus': return <CalculusSolver playSound={playSound} />;
+            default: return null;
         }
-        if (numbers.length === 0) {
-            setError("Không tìm thấy số hợp lệ trong chuỗi bạn nhập.");
-            return;
-        }
-
-        numbers.sort((a, b) => a - b);
-        const count = numbers.length;
-        const sum = numbers.reduce((acc, val) => acc + val, 0);
-        const mean = sum / count;
-        
-        const mid = Math.floor(count / 2);
-        const median = count % 2 === 0
-            ? (numbers[mid - 1] + numbers[mid]) / 2
-            : numbers[mid];
-
-        const counts = numbers.reduce((acc: Record<string, number>, val) => {
-            acc[String(val)] = (acc[String(val)] || 0) + 1;
-            return acc;
-        }, {} as Record<string, number>);
-
-        const maxFreq = Math.max(...(Object.values(counts) as number[]));
-        const modeKeys = Object.keys(counts).filter(key => counts[key] === maxFreq);
-        const mode: string | number = modeKeys.length === 1 ? Number(modeKeys[0]) : modeKeys.join(', ');
-
-        const variance = numbers.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / count;
-        const stdDev = Math.sqrt(variance);
-
-        setResults({
-            'Số lượng': count,
-            'Tổng': formatNumber(sum),
-            'Số nhỏ nhất': numbers[0],
-            'Số lớn nhất': numbers[count - 1],
-            'Khoảng biến thiên': formatNumber(numbers[count - 1] - numbers[0]),
-            'Trung bình cộng (Mean)': formatNumber(mean),
-            'Trung vị (Median)': formatNumber(median),
-            'Yếu vị (Mode)': mode,
-            'Phương sai (Variance)': formatNumber(variance),
-            'Độ lệch chuẩn (Std. Dev.)': formatNumber(stdDev),
-        });
     };
-
+    
     return (
-        <div className="solver-container">
-            <h3>Thống kê mô tả</h3>
-            <div className="form-group">
-                <label htmlFor="stats-input">Nhập dãy số (cách nhau bằng dấu phẩy hoặc khoảng trắng):</label>
-                <textarea 
-                    id="stats-input"
-                    className="stats-input-area" 
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    rows="4"
-                />
-                <button onClick={handleCalculate} className="btn btn-primary">Tính toán</button>
-            </div>
-            {error && <div className="status-message lose">{error}</div>}
-            {results && (
-                 <div className="result-card">
-                    <h3>Kết quả thống kê</h3>
-                    {Object.entries(results).map(([key, value]) => (
-                        <div key={key} className="rate-item">
-                            <h4>{key}</h4>
-                            <p className="price">{value.toString()}</p>
-                        </div>
-                    ))}
-                </div>
-            )}
+        <div className="tool-container math-solver">
+            <h2 className="game-title">Công Cụ Giải Toán</h2>
+            <nav className="sub-nav">
+                <button onClick={() => { playSound('click'); setSolver('quadratic'); }} className={`btn ${solver === 'quadratic' ? 'active' : ''}`}>Bậc 2</button>
+                <button onClick={() => { playSound('click'); setSolver('cubic'); }} className={`btn ${solver === 'cubic' ? 'active' : ''}`}>Bậc 3</button>
+                <button onClick={() => { playSound('click'); setSolver('linear-system'); }} className={`btn ${solver === 'linear-system' ? 'active' : ''}`}>Hệ PT 2 ẩn</button>
+                <button onClick={() => { playSound('click'); setSolver('calculus'); }} className={`btn ${solver === 'calculus' ? 'active' : ''}`}>Đạo hàm / Nguyên hàm</button>
+            </nav>
+            {renderSolver()}
         </div>
     );
 };
 
+const IPhoneSimulator: React.FC<SoundProps> = ({ playSound }) => {
+    const [activeApp, setActiveApp] = useState<string | null>(null);
+    const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+    const [cameraError, setCameraError] = useState<string | null>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [isFlashing, setIsFlashing] = useState(false);
 
-const MathSolver: React.FC<SoundProps> = ({ playSound }) => {
-  const [activeSolver, setActiveSolver] = useState('quadratic'); // 'quadratic', 'cubic', 'stats'
+    const openApp = async (appName: string) => {
+        playSound('click');
+        if (appName === 'camera') {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                setCameraStream(stream);
+                setCameraError(null);
+            } catch (err) {
+                console.error("Camera access denied:", err);
+                setCameraError("Không thể truy cập camera. Vui lòng cho phép quyền truy cập trong trình duyệt của bạn.");
+                setCameraStream(null);
+            }
+        }
+        setActiveApp(appName);
+    };
 
-  const handleNavClick = (solverName: string) => {
-    playSound('click');
-    setActiveSolver(solverName);
-  };
+    const closeApp = () => {
+        playSound('click');
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            setCameraStream(null);
+        }
+        setActiveApp(null);
+    };
 
-  return (
-    <div className="tool-container math-solver">
-      <h2 className="game-title">Công Cụ Toán Học</h2>
-      <nav className="sub-nav">
-        <button onClick={() => handleNavClick('quadratic')} className={activeSolver === 'quadratic' ? 'active' : ''}>
-          PT Bậc 2
-        </button>
-        <button onClick={() => handleNavClick('cubic')} className={activeSolver === 'cubic' ? 'active' : ''}>
-          PT Bậc 3
-        </button>
-        <button onClick={() => handleNavClick('linear-system')} className={activeSolver === 'linear-system' ? 'active' : ''}>
-          Hệ PT
-        </button>
-        <button onClick={() => handleNavClick('calculus')} className={activeSolver === 'calculus' ? 'active' : ''}>
-          Vi Tích Phân
-        </button>
-        <button onClick={() => handleNavClick('stats')} className={activeSolver === 'stats' ? 'active' : ''}>
-          Thống Kê
-        </button>
-      </nav>
-      <div className="solver-content">
-        {activeSolver === 'quadratic' && <QuadraticSolver />}
-        {activeSolver === 'cubic' && <CubicSolver />}
-        {activeSolver === 'linear-system' && <LinearSystemSolver />}
-        {activeSolver === 'calculus' && <CalculusSolver />}
-        {activeSolver === 'stats' && <StatsCalculator />}
-      </div>
-    </div>
-  );
-};
-
-// --- iPhone Simulator ---
-
-const IPHONE_APPS = {
-    messages: { name: 'Messages', icon: '💬', color: '#4CAF50' },
-    mail: { name: 'Mail', icon: '✉️', color: '#007AFF' },
-    camera: { name: 'Camera', icon: '📷', color: '#333' },
-    music: { name: 'Music', icon: '🎵', color: '#FA2855' },
-    movies: { name: 'Movies', icon: '🎬', color: '#9C27B0' },
-};
-
-const DOCK_APPS = ['messages', 'mail', 'camera', 'music'];
-
-const StatusBar = () => {
-    const [time, setTime] = useState(new Date());
+    const takePicture = () => {
+        if (!cameraStream) return;
+        playSound('shutter');
+        setIsFlashing(true);
+        setTimeout(() => setIsFlashing(false), 200);
+    };
 
     useEffect(() => {
-        const timer = setInterval(() => setTime(new Date()), 1000 * 60); // Update every minute
-        return () => clearInterval(timer);
-    }, []);
+        if (cameraStream && videoRef.current) {
+            videoRef.current.srcObject = cameraStream;
+        }
+        return () => { // Cleanup on unmount
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, [cameraStream]);
 
+    const renderAppContent = () => {
+        if (!activeApp) return <HomeScreen openApp={openApp} />;
+        
+        switch (activeApp) {
+            case 'messages': return <MessagesApp playSound={playSound} />;
+            case 'mail': return <MailApp />;
+            case 'camera': return <CameraApp videoRef={videoRef} error={cameraError} isFlashing={isFlashing} takePicture={takePicture} />;
+            case 'music': return <GenericMediaApp type="music" />;
+            case 'movies': return <GenericMediaApp type="movies" />;
+            default: return <HomeScreen openApp={openApp} />;
+        }
+    };
+    
     return (
+        <div className="iphone-shell-container">
+            <div className="iphone-shell">
+                <div className="iphone-screen">
+                    <StatusBar />
+                    <div className="iphone-content">
+                        {renderAppContent()}
+                    </div>
+                    {activeApp && <HomeBar onClick={closeApp} />}
+                </div>
+                {activeApp && <div className="iphone-exit-button" onClick={closeApp} role="button" aria-label="Close App"></div>}
+            </div>
+        </div>
+    );
+};
+
+const StatusBar = () => (
+    <>
         <div className="status-bar">
-            <div className="time">{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-            <div className="dynamic-island"></div>
+            <span>{new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
             <div className="indicators">
                 <span>📶</span>
                 <span>LTE</span>
                 <span>🔋</span>
             </div>
         </div>
-    );
-};
+        <div className="dynamic-island"></div>
+    </>
+);
 
-const HomeScreen = ({ openApp }: { openApp: (appId: string) => void }) => {
+const HomeBar = ({ onClick }: { onClick: () => void }) => (
+     <div className="home-bar-container" onClick={onClick}>
+        <div className="home-bar"></div>
+    </div>
+);
+
+const AppIcon: React.FC<{ name: string; icon: string; bgColor: string; onClick: () => void }> = ({ name, icon, bgColor, onClick }) => (
+    <div className="app-icon-container" onClick={onClick}>
+        <div className="app-icon" style={{ backgroundColor: bgColor }}>{icon}</div>
+        <span className="app-label">{name}</span>
+    </div>
+);
+
+const HomeScreen = ({ openApp }: { openApp: (appName: string) => void }) => {
+    const apps = [
+        { name: 'Tin nhắn', icon: '💬', bgColor: '#4cd964', id: 'messages' },
+        { name: 'Mail', icon: '✉️', bgColor: '#007aff', id: 'mail' },
+        { name: 'Camera', icon: '📷', bgColor: '#333', id: 'camera' },
+        { name: 'Nhạc', icon: '🎵', bgColor: '#ff2d55', id: 'music' },
+        { name: 'Phim', icon: '🎬', bgColor: '#5856d6', id: 'movies' },
+        { name: 'Thời tiết', icon: '☀️', bgColor: '#ff9500', id: 'weather' },
+        { name: 'Lịch', icon: '📅', bgColor: '#ff3b30', id: 'calendar' },
+        { name: 'Ảnh', icon: '🖼️', bgColor: '#fff', id: 'photos' },
+    ];
+    const dockApps = [
+        { name: 'Phone', icon: '📞', bgColor: '#4cd964', id: 'phone' },
+        { name: 'Safari', icon: '🧭', bgColor: '#007aff', id: 'safari' },
+        { name: 'Zalo', icon: '🇿', bgColor: '#0068ff', id: 'zalo' },
+        { name: 'Facebook', icon: '🇫', bgColor: '#1877f2', id: 'facebook' },
+    ];
+
     return (
         <div className="iphone-app-screen home-screen">
             <div className="app-grid">
-                {Object.entries(IPHONE_APPS).map(([id, { name, icon, color }]) => (
-                    <div key={id} className="app-icon-container" onClick={() => openApp(id)}>
-                        <div className="app-icon" style={{ backgroundColor: color }}>{icon}</div>
-                        <span className="app-label">{name}</span>
-                    </div>
-                ))}
+                {apps.map(app => <AppIcon key={app.id} name={app.name} icon={app.icon} bgColor={app.bgColor} onClick={() => openApp(app.id)} />)}
             </div>
             <div className="dock">
-                {DOCK_APPS.map(id => (
-                    <div key={id} className="app-icon-container" onClick={() => openApp(id)}>
-                        <div className="app-icon" style={{ backgroundColor: IPHONE_APPS[id].color }}>{IPHONE_APPS[id].icon}</div>
-                    </div>
-                ))}
+                {dockApps.map(app => <AppIcon key={app.id} name="" icon={app.icon} bgColor={app.bgColor} onClick={() => openApp(app.id)} />)}
             </div>
         </div>
     );
@@ -1790,66 +1763,81 @@ const HomeScreen = ({ openApp }: { openApp: (appId: string) => void }) => {
 
 const MessagesApp: React.FC<SoundProps> = ({ playSound }) => {
     const [messages, setMessages] = useState([
-        { id: 1, text: "Chào bạn, khoẻ không?", sender: 'other' },
-        { id: 2, text: "Mình khoẻ, cảm ơn bạn!", sender: 'me' },
+        { text: 'Chào bạn, khoẻ không?', sender: 'other' },
+        { text: 'Mình khoẻ, cảm ơn bạn. Còn bạn thì sao?', sender: 'me' },
     ]);
     const [input, setInput] = useState('');
-    const scrollRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-      scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
 
     const handleSend = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!input.trim()) return;
+        if (input.trim() === '') return;
         playSound('messageSent');
-        const newMessages = [...messages, { id: Date.now(), text: input, sender: 'me' }];
-        setMessages(newMessages);
+        setMessages([...messages, { text: input, sender: 'me' }]);
         setInput('');
-
         setTimeout(() => {
-            playSound('messageReceived');
-            const replies = ["Tuyệt vời!", "Okay, có gì mới không?", "Hmm, thú vị đó.", "Mình hiểu rồi."];
-            const reply = replies[Math.floor(Math.random() * replies.length)];
-            setMessages(prev => [...prev, { id: Date.now() + 1, text: reply, sender: 'other' }]);
-        }, 1500);
+             playSound('messageReceived');
+             setMessages(prev => [...prev, { text: '...', sender: 'other' }]);
+        }, 1000);
     };
 
     return (
         <div className="iphone-app-screen messages-app">
-            <div className="iphone-app-header">Messages</div>
+            <div className="iphone-app-header">Tin nhắn</div>
             <div className="message-list">
-                {messages.map(msg => (
-                    <div key={msg.id} className={`message-bubble ${msg.sender}`}>
-                        {msg.text}
-                    </div>
+                {messages.map((msg, i) => (
+                    <div key={i} className={`message-bubble ${msg.sender}`}>{msg.text}</div>
                 ))}
-                <div ref={scrollRef}></div>
             </div>
             <form className="message-input-bar" onSubmit={handleSend}>
-                <input type="text" placeholder="Type a message" value={input} onChange={e => setInput(e.target.value)} />
+                <input type="text" placeholder="Nhắn tin" value={input} onChange={e => setInput(e.target.value)} />
                 <button type="submit">↑</button>
             </form>
         </div>
     );
 };
 
-const MailApp = () => {
-    const mockEmails = [
-        { id: 1, sender: 'Team Apple', subject: 'Welcome to your new iPhone!', body: '...' },
-        { id: 2, sender: 'Your Bank', subject: 'Security Alert', body: '...' },
-        { id: 3, sender: 'Mom', subject: 'Dinner tonight?', body: '...' },
-        { id: 4, sender: 'LinkedIn', subject: 'You appeared in 9 searches this week', body: '...' },
-    ];
+const MailApp = () => (
+    <div className="iphone-app-screen mail-app">
+        <div className="iphone-app-header">Hộp thư đến</div>
+        <div className="email-list">
+            <div className="email-item">
+                <div className="email-sender">Apple</div>
+                <div className="email-subject">Your iCloud storage is almost full.</div>
+            </div>
+             <div className="email-item">
+                <div className="email-sender">Google</div>
+                <div className="email-subject">Security alert for your linked account</div>
+            </div>
+        </div>
+    </div>
+);
+
+const CameraApp: React.FC<{ videoRef: React.RefObject<HTMLVideoElement>, error: string | null, isFlashing: boolean, takePicture: () => void }> = ({ videoRef, error, isFlashing, takePicture }) => (
+    <div className="iphone-app-screen camera-app">
+        <video ref={videoRef} className="camera-viewfinder" autoPlay playsInline muted />
+        {error && <div className="camera-error-overlay"><p>📷</p><p>{error}</p></div>}
+        {isFlashing && <div className="camera-flash"></div>}
+        <div className="camera-controls">
+            <div className="shutter-button-outer" onClick={takePicture}>
+                <div className="shutter-button-inner"></div>
+            </div>
+        </div>
+    </div>
+);
+
+const GenericMediaApp = ({ type }: { type: 'music' | 'movies' }) => {
+    const items = type === 'music' 
+        ? [{ title: 'Album 1', icon: '🎧' }, { title: 'Album 2', icon: '🎤' }]
+        : [{ title: 'Phim A', icon: '🍿' }, { title: 'Phim B', icon: '🎞️' }];
+
     return (
-        <div className="iphone-app-screen mail-app">
-            <div className="iphone-app-header">Inbox</div>
-            <div className="email-list">
-                {mockEmails.map(email => (
-                    <div key={email.id} className="email-item">
-                        <div className="email-sender">{email.sender}</div>
-                        <div className="email-subject">{email.subject}</div>
+        <div className="iphone-app-screen generic-media-app">
+            <div className="iphone-app-header">{type === 'music' ? 'Nhạc' : 'Phim'}</div>
+            <div className="media-grid">
+                {items.map(item => (
+                    <div className="media-item" key={item.title}>
+                        <div className={`media-artwork ${type === 'music' ? 'music' : 'movie'}`}>{item.icon}</div>
+                        <div className="media-title">{item.title}</div>
                     </div>
                 ))}
             </div>
@@ -1857,223 +1845,74 @@ const MailApp = () => {
     );
 };
 
-const CameraApp: React.FC<SoundProps> = ({ playSound }) => {
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const [flash, setFlash] = useState(false);
-    const [cameraError, setCameraError] = useState<string | null>(null);
-
-    useEffect(() => {
-        let stream: MediaStream | null = null;
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(s => {
-                stream = s;
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                }
-            })
-            .catch(err => {
-                console.error("Camera access denied:", err);
-                setCameraError("Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập trong cài đặt trình duyệt của bạn.");
-            });
-
-        return () => {
-            stream?.getTracks().forEach(track => track.stop());
-        };
-    }, []);
-
-    const handleShutter = () => {
-      playSound('shutter');
-      setFlash(true);
-      setTimeout(() => setFlash(false), 200);
-    }
-
-    return (
-        <div className="iphone-app-screen camera-app">
-            {cameraError ? (
-                <div className="camera-error-overlay">
-                    <p>🚫</p>
-                    <p>{cameraError}</p>
-                </div>
-            ) : (
-                <>
-                    <video ref={videoRef} className="camera-viewfinder" autoPlay playsInline muted></video>
-                    {flash && <div className="camera-flash"></div>}
-                    <div className="camera-controls">
-                        <div className="shutter-button-outer" onClick={handleShutter}>
-                            <div className="shutter-button-inner"></div>
-                        </div>
-                    </div>
-                </>
-            )}
-        </div>
-    );
-};
-
-const MusicApp = () => {
-    const albums = [ 'Cosmic', 'Starlight', 'Eclipse', 'Neon Dreams', 'Ocean Drive', 'Midnight City' ];
-    return (
-        <div className="iphone-app-screen generic-media-app">
-            <div className="iphone-app-header">Music</div>
-            <div className="media-grid">
-                {albums.map((album, i) => (
-                    <div key={i} className="media-item">
-                        <div className="media-artwork music" style={{ filter: `hue-rotate(${i * 60}deg)` }}>🎵</div>
-                        <div className="media-title">{album}</div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    )
-};
-
-const MoviesApp = () => {
-    const movies = [ 'Inception', 'The Matrix', 'Interstellar', 'Blade Runner', 'Avatar', 'Gravity' ];
-     return (
-        <div className="iphone-app-screen generic-media-app">
-            <div className="iphone-app-header">Movies</div>
-            <div className="media-grid">
-                {movies.map((movie, i) => (
-                    <div key={i} className="media-item">
-                        <div className="media-artwork movie" style={{ filter: `hue-rotate(${i * 60}deg)` }}>🎬</div>
-                        <div className="media-title">{movie}</div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    )
-};
-
-interface IPhoneShellProps extends SoundProps {
-  onExit: () => void;
+interface Tool {
+    id: string;
+    name: string;
+    icon: string;
+    component: React.FC<any>;
+    bgClass: string;
 }
 
-const IPhoneShell: React.FC<IPhoneShellProps> = ({ playSound, onExit }) => {
-    const [activeApp, setActiveApp] = useState('home');
-
-    const openApp = (appId: string) => {
-        playSound('click');
-        setActiveApp(appId);
-    };
-
-    const goHome = () => {
-        playSound('click');
-        setActiveApp('home');
-    }
-
-    const renderApp = () => {
-        switch(activeApp) {
-            case 'home': return <HomeScreen openApp={openApp} />;
-            case 'messages': return <MessagesApp playSound={playSound} />;
-            case 'mail': return <MailApp />;
-            case 'camera': return <CameraApp playSound={playSound}/>;
-            case 'music': return <MusicApp />;
-            case 'movies': return <MoviesApp />;
-            default: return <HomeScreen openApp={openApp} />;
-        }
-    };
-
-    return (
-        <div className="iphone-shell-container">
-            <div className="iphone-shell">
-                 <div className="iphone-exit-button" onClick={onExit} title="Thoát giả lập"></div>
-                <div className="iphone-screen">
-                    <StatusBar />
-                    <div className="iphone-content" key={activeApp}>
-                        {renderApp()}
-                    </div>
-                    <div className="home-bar-container" onClick={goHome}>
-                        <div className="home-bar"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    )
-};
-
-const NAV_ITEMS = [
-    {id: 'iphone', name: 'iPhone 17', icon: '📱'},
-    {id: 'bauCua', name: 'Bầu Cua', icon: '🎲'},
-    {id: 'diceRoller', name: 'Xí Ngầu', icon: '🎲'},
-    {id: 'sudoku', name: 'Sudoku', icon: '🔢'},
-    {id: 'memory', name: 'Bắt Thú', icon: '👻'},
-    {id: 'math', name: 'Toán Học', icon: '🧮'},
-    {id: 'lunar', name: 'Lịch Âm', icon: '🗓️'},
-    {id: 'weather', name: 'Thời Tiết', icon: '🌦️'},
-    {id: 'rates', name: 'Tỷ Giá', icon: '💹'},
-];
-
-const APP_BACKGROUNDS: Record<string, string> = {
-    iphone: 'bg-iphone',
-    bauCua: 'bg-bau-cua',
-    diceRoller: 'bg-dice-roller',
-    sudoku: 'bg-sudoku',
-    memory: 'bg-memory',
-    math: 'bg-math',
-    lunar: 'bg-lunar',
-    weather: 'bg-weather',
-    rates: 'bg-rates',
-};
-
-
 const App = () => {
-  const [activeApp, setActiveApp] = useState('bauCua');
-  const [balance, setBalance] = useState<number>(1000);
+  const [activeToolId, setActiveToolId] = useState('iphone');
+  const [balance, setBalance] = useState(1000);
   const [isMuted, setIsMuted] = useState(false);
 
-  const playSound = useCallback((name: SoundName) => {
-      if (!isMuted) {
-          sounds[name].play();
-      }
-  }, [isMuted]);
-
-  const handleNavClick = (appName: string) => {
-    playSound('click');
-    setActiveApp(appName);
-  }
+  const games: Tool[] = [
+    { id: 'bau-cua', name: 'Bầu Cua', icon: '🦀', component: BauCuaGame, bgClass: 'bg-bau-cua' },
+    { id: 'dice-roller', name: 'Xí Ngầu', icon: '🎲', component: DiceRoller, bgClass: 'bg-dice-roller' },
+    { id: 'sudoku', name: 'Sudoku', icon: '🧩', component: SudokuGame, bgClass: 'bg-sudoku' },
+    { id: 'memory', name: 'Bắt Thú', icon: '🐯', component: MemoryGame, bgClass: 'bg-memory' },
+  ];
   
-  const renderActiveApp = () => {
-    switch(activeApp) {
-        case 'iphone': return <IPhoneShell playSound={playSound} onExit={() => handleNavClick('bauCua')} />;
-        case 'bauCua': return <BauCuaGame balance={balance} setBalance={setBalance} playSound={playSound} />;
-        case 'diceRoller': return <DiceRoller balance={balance} setBalance={setBalance} playSound={playSound} />;
-        case 'sudoku': return <SudokuGame playSound={playSound} />;
-        case 'memory': return <MemoryGame playSound={playSound} />;
-        case 'math': return <MathSolver playSound={playSound} />;
-        case 'lunar': return <LunarCalendar />;
-        case 'weather': return <WeatherForecast />;
-        case 'rates': return <ExchangeRates />;
-        default: return <BauCuaGame balance={balance} setBalance={setBalance} playSound={playSound} />;
+  const tools: Tool[] = [
+    { id: 'iphone', name: 'iPhone 17 Pro', icon: '📱', component: IPhoneSimulator, bgClass: 'bg-iphone' },
+    { id: 'math-solver', name: 'Giải Toán', icon: '🧮', component: MathSolver, bgClass: 'bg-math' },
+    { id: 'lunar-calendar', name: 'Lịch Âm', icon: '📅', component: LunarCalendar, bgClass: 'bg-lunar' },
+    { id: 'weather', name: 'Thời Tiết', icon: '🌦️', component: WeatherForecast, bgClass: 'bg-weather' },
+    { id: 'exchange-rates', name: 'Tỷ Giá', icon: '💹', component: ExchangeRates, bgClass: 'bg-rates' },
+  ];
+
+  const allTools = useMemo(() => [...tools, ...games], []);
+  const activeTool = useMemo(() => allTools.find(tool => tool.id === activeToolId) || allTools[0], [activeToolId, allTools]);
+
+  const playSoundWithMuteCheck = (name: SoundName) => {
+    if (!isMuted) {
+      sounds[name].play();
     }
   };
   
-  const backgroundClass = APP_BACKGROUNDS[activeApp] || '';
+  const ActiveComponent = activeTool.component;
 
   return (
     <div className="app-container">
       <aside className="sidebar">
-        <div className="sidebar-header">
-            <h1>🍸 Martini</h1>
-        </div>
+        <header className="sidebar-header">
+          <h1><span>🍸</span> Martini</h1>
+        </header>
         <nav>
-            {NAV_ITEMS.map(item => (
-                <button 
-                  key={item.id} 
-                  className={activeApp === item.id ? 'active' : ''}
-                  onClick={() => handleNavClick(item.id)}
-                >
-                    <span className="nav-icon">{item.icon}</span>
-                    <span>{item.name}</span>
-                </button>
-            ))}
-        </nav>
-        <div className="sidebar-footer">
-            <button onClick={() => { playSound('click'); setIsMuted(!isMuted); }} className="mute-btn">
-                {isMuted ? '🔊' : '🔇'}
+          {tools.map(tool => (
+            <button key={tool.id} className={activeToolId === tool.id ? 'active' : ''} onClick={() => { playSoundWithMuteCheck('click'); setActiveToolId(tool.id); }} aria-label={`Open ${tool.name}`}>
+              <span className="nav-icon">{tool.icon}</span>
+              <span>{tool.name}</span>
             </button>
-        </div>
+          ))}
+          <div style={{height: '1px', backgroundColor: 'var(--border-color)', margin: '0.5rem 0'}}></div>
+          {games.map(game => (
+            <button key={game.id} className={activeToolId === game.id ? 'active' : ''} onClick={() => { playSoundWithMuteCheck('click'); setActiveToolId(game.id); }} aria-label={`Open ${game.name}`}>
+              <span className="nav-icon">{game.icon}</span>
+              <span>{game.name}</span>
+            </button>
+          ))}
+        </nav>
+        <footer className="sidebar-footer">
+          <button className="mute-btn" onClick={() => setIsMuted(!isMuted)} aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}>
+            {isMuted ? '🔇' : '🔊'}
+          </button>
+        </footer>
       </aside>
-      <main className={`main-content ${backgroundClass}`}>
-          {renderActiveApp()}
+      <main className={`main-content ${activeTool.bgClass}`}>
+         <ActiveComponent playSound={playSoundWithMuteCheck} balance={balance} setBalance={setBalance} />
       </main>
     </div>
   );
