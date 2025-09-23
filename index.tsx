@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -27,12 +28,12 @@ interface SoundProps {
 }
 
 const BAU_CUA_ITEMS = [
-  { id: 'nai', name: 'Nai', imgSrc: 'https://i.imgur.com/s65a25p.png' },
-  { id: 'bau', name: 'Bầu', imgSrc: 'https://i.imgur.com/sO3a25E.png' },
-  { id: 'ga', name: 'Gà', imgSrc: 'https://i.imgur.com/N2TcUv5.png' },
-  { id: 'ca', name: 'Cá', imgSrc: 'https://i.imgur.com/qL3g64s.png' },
-  { id: 'cua', name: 'Cua', imgSrc: 'https://i.imgur.com/zO9a8bM.png' },
-  { id: 'tom', name: 'Tôm', imgSrc: 'https://i.imgur.com/xT3g9T8.png' },
+  { id: 'nai', name: 'Nai', imgSrc: 'https://i.ibb.co/YTBmMzC/nai.png' },
+  { id: 'bau', name: 'Bầu', imgSrc: 'https://i.ibb.co/r2YyKXV/bau.png' },
+  { id: 'ga', name: 'Gà', imgSrc: 'https://i.ibb.co/wJ34b3d/ga.png' },
+  { id: 'ca', name: 'Cá', imgSrc: 'https://i.ibb.co/hM2gN75/ca.png' },
+  { id: 'cua', name: 'Cua', imgSrc: 'https://i.ibb.co/P9Lqf6V/cua.png' },
+  { id: 'tom', name: 'Tôm', imgSrc: 'https://i.ibb.co/6ZzJ2vW/tom.png' },
 ];
 
 const BET_AMOUNT = 10;
@@ -41,24 +42,6 @@ interface GameProps extends SoundProps {
   balance: number;
   setBalance: React.Dispatch<React.SetStateAction<number>>;
 }
-
-const DiceCube: React.FC<{ result: string | null; isShaking: boolean }> = ({ result, isShaking }) => {
-    const faces = ['nai', 'bau', 'ga', 'ca', 'cua', 'tom']; // Must match order of faces in CSS
-    const resultClass = result ? `show-${result}` : '';
-    const shakingClass = isShaking ? 'shaking' : '';
-
-    return (
-        <div className="dice-container">
-            <div className={`dice-cube ${shakingClass} ${resultClass}`}>
-                {faces.map(face => (
-                    <div key={face} className={`dice-face face-${face}`}>
-                        <img src={BAU_CUA_ITEMS.find(item => item.id === face)?.imgSrc} alt={face} />
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
 
 const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance, playSound }) => {
   const [bets, setBets] = useState<Record<string, number>>({});
@@ -104,6 +87,7 @@ const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
       for (const [itemId, betAmount] of Object.entries(bets)) {
           const appearances = newResults.filter(res => res === itemId).length;
           if (appearances > 0) {
+              // FIX: Refactored redundant check. `betAmount` is already a number here.
               payout += betAmount + (betAmount * appearances);
           }
       }
@@ -127,49 +111,44 @@ const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
           setBets({});
       }, 500); // Delay message update for better UX
 
-    }, 2500); // Increased shake duration for 3D animation
+    }, 1000); // Reduced shake duration for 2D
   };
   
   return (
-    <div className="game-container bau-cua-3d">
-      <h2 className="game-title">Bầu Cua Tôm Cá 3D</h2>
+    <div className="game-container bau-cua-container">
+      <h2 className="game-title">Bầu Cua Tôm Cá</h2>
       <div className="stats-bar">
         <div className="balance" aria-label="Current Balance">Số dư: {balance}</div>
         <div className="total-bet" aria-label="Total Bet">Tổng cược: {totalBet}</div>
       </div>
       
-      <div className="bau-cua-board-perspective">
-        <div className="bau-cua-mat">
-          <div className="bau-cua-board-3d">
-            {BAU_CUA_ITEMS.map((item, index) => (
-              <div 
-                key={item.id} 
-                className={`bet-pad-3d bet-pad-${index} ${bets[item.id] > 0 ? 'selected' : ''}`}
-                onClick={() => placeBet(item.id)}
-                role="gridcell"
-                tabIndex={0}
-                aria-label={`Bet on ${item.name}`}
-              >
-                <div className="bet-pad-content">
-                  <img src={item.imgSrc} alt={item.name} className="item-img" />
-                  <span className="item-name-3d">{item.name}</span>
-                  {bets[item.id] > 0 && <div className="bet-amount">{bets[item.id]}</div>}
-                </div>
-              </div>
-            ))}
+      <div className="betting-board bau-cua-board-2d">
+        {BAU_CUA_ITEMS.map((item) => (
+          <div 
+            key={item.id} 
+            className={`bet-item ${bets[item.id] > 0 ? 'selected' : ''}`}
+            onClick={() => placeBet(item.id)}
+            role="gridcell"
+            tabIndex={0}
+            aria-label={`Bet on ${item.name}`}
+          >
+            <div className="item-emoji" aria-hidden="true">
+              <img src={item.imgSrc} alt={item.name} />
+            </div>
+            <div className="item-name">{item.name}</div>
+            <div className="bet-amount">{bets[item.id] > 0 ? bets[item.id] : ''}</div>
           </div>
-        </div>
+        ))}
       </div>
       
-      <div className="results-container-3d">
-        <div className="dice-plate">
-          <div className="dice-area">
-              <DiceCube result={results[0]} isShaking={isShaking} />
-              <DiceCube result={results[1]} isShaking={isShaking} />
-              <DiceCube result={results[2]} isShaking={isShaking} />
-          </div>
-        </div>
+       <div className="bau-cua-results-2d">
+          {isShaking && <div className="shaking-text">Đang lắc...</div>}
+          {!isShaking && results.length > 0 && results.map((resultId, index) => {
+             const item = BAU_CUA_ITEMS.find(i => i.id === resultId);
+             return item ? <img key={index} src={item.imgSrc} alt={item.name} className="result-item" /> : null;
+          })}
       </div>
+
        <div className="controls">
         <button onClick={handleShake} className="btn btn-primary" disabled={isShaking || totalBet === 0}>Lắc</button>
         <button onClick={clearBets} className="btn btn-secondary" disabled={isShaking || totalBet === 0}>Xóa cược</button>
@@ -266,8 +245,13 @@ const DiceRoller: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
             
             const winningFace = roll.toString();
             let payout = 0;
-            if (bets[winningFace]) {
-                payout = bets[winningFace] + (bets[winningFace] * 5); 
+            const betValue = bets[winningFace];
+            // FIX: The type of `bets[winningFace]` was inferred as `unknown`, causing a type error.
+            // Using a `typeof` check to ensure it's a number before calculations.
+            // Assigning to a new const helps the type checker preserve the narrowed type within the closure.
+            if (typeof betValue === 'number') {
+                const numericBetValue = betValue;
+                payout = numericBetValue + (numericBetValue * 5);
             }
             
             const netChange = payout - totalBet;
@@ -1027,18 +1011,19 @@ const ExchangeRates = () => {
         'AUD': 'A$',
     };
 
-    const [amount, setAmount] = useState<number | string>(1);
+    // FIX: Refactored state to be more type-safe, holding a number for calculations or an empty string for the input.
+    const [amount, setAmount] = useState<number | ''>(1);
     const [fromCurrency, setFromCurrency] = useState('USD');
     const [toCurrency, setToCurrency] = useState('VND');
     const [result, setResult] = useState('');
 
     useEffect(() => {
-        if (amount === '' || isNaN(Number(amount))) {
+        if (amount === '') {
             setResult('');
             return;
         }
 
-        const numAmount = Number(amount);
+        const numAmount = amount;
         const amountInUsd = numAmount / rates[fromCurrency];
         const convertedAmount = amountInUsd * rates[toCurrency];
 
@@ -1052,8 +1037,13 @@ const ExchangeRates = () => {
 
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
-        if (value === '' || (!isNaN(Number(value)) && Number(value) >= 0)) {
-            setAmount(value);
+        if (value === '') {
+            setAmount('');
+        } else {
+            const num = parseFloat(value);
+            if (!isNaN(num) && num >= 0) {
+                setAmount(num);
+            }
         }
     };
     
@@ -1076,7 +1066,7 @@ const ExchangeRates = () => {
                             id="amount" 
                             value={amount} 
                             onChange={handleAmountChange}
-                            min={0}
+                            min="0"
                         />
                     </div>
                      <div className="converter-group">
@@ -1236,14 +1226,16 @@ const QuadraticSolver = () => {
 
 const CubicSolver = () => {
     // This is a simplified solver for demonstration and might not cover all edge cases perfectly.
-    const [coeffs, setCoeffs] = useState({ a: '', b: '', c: '', d: '' });
+    // FIX: Changed state to be of type string | number to align with other solver components.
+    const [coeffs, setCoeffs] = useState<{ a: string | number; b: string | number; c: string | number; d: string | number; }>({ a: '', b: '', c: '', d: '' });
     const [solution, setSolution] = useState(null);
 
     const handleSolve = () => {
-        let a = parseFloat(coeffs.a) || 0;
-        let b = parseFloat(coeffs.b) || 0;
-        let c = parseFloat(coeffs.c) || 0;
-        let d = parseFloat(coeffs.d) || 0;
+        // FIX: Added .toString() to safely handle the string | number union type when parsing.
+        let a = parseFloat(coeffs.a.toString()) || 0;
+        let b = parseFloat(coeffs.b.toString()) || 0;
+        let c = parseFloat(coeffs.c.toString()) || 0;
+        let d = parseFloat(coeffs.d.toString()) || 0;
 
         if (a === 0) {
             setSolution({ message: "Hệ số 'a' không thể bằng 0. Đây là phương trình bậc 2 hoặc thấp hơn." });
@@ -1327,7 +1319,8 @@ const CubicSolver = () => {
 };
 
 const LinearSystemSolver = () => {
-    const [coeffs, setCoeffs] = useState({ a1: '', b1: '', c1: '', a2: '', b2: '', c2: '' });
+    // FIX: Explicitly typed state properties as `string | number` to fix type errors on the input's `value` prop and align with other solvers.
+    const [coeffs, setCoeffs] = useState<{ a1: string | number; b1: string | number; c1: string | number; a2: string | number; b2: string | number; c2: string | number; }>({ a1: '', b1: '', c1: '', a2: '', b2: '', c2: '' });
     const [solution, setSolution] = useState(null);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1335,12 +1328,13 @@ const LinearSystemSolver = () => {
     };
 
     const handleSolve = () => {
-        const a1 = parseFloat(coeffs.a1) || 0;
-        const b1 = parseFloat(coeffs.b1) || 0;
-        const c1 = parseFloat(coeffs.c1) || 0;
-        const a2 = parseFloat(coeffs.a2) || 0;
-        const b2 = parseFloat(coeffs.b2) || 0;
-        const c2 = parseFloat(coeffs.c2) || 0;
+        // FIX: Added .toString() to safely handle the string | number union type, consistent with other solvers.
+        const a1 = parseFloat(coeffs.a1.toString()) || 0;
+        const b1 = parseFloat(coeffs.b1.toString()) || 0;
+        const c1 = parseFloat(coeffs.c1.toString()) || 0;
+        const a2 = parseFloat(coeffs.a2.toString()) || 0;
+        const b2 = parseFloat(coeffs.b2.toString()) || 0;
+        const c2 = parseFloat(coeffs.c2.toString()) || 0;
 
         const D = a1 * b2 - a2 * b1;
         const Dx = c1 * b2 - c2 * b1;
@@ -1564,7 +1558,8 @@ const StatsCalculator = () => {
         const sum = numbers.reduce((acc, val) => acc + val, 0);
         const mean = sum / count;
         
-        let median;
+        // FIX: Initialize median to ensure it has type 'number' and avoid potential type errors.
+        let median = 0;
         const mid = Math.floor(count / 2);
         if (count % 2 === 0) {
             median = (numbers[mid - 1] + numbers[mid]) / 2;
@@ -1864,7 +1859,11 @@ const MoviesApp = () => {
     )
 };
 
-const IPhoneShell: React.FC<SoundProps> = ({ playSound }) => {
+interface IPhoneShellProps extends SoundProps {
+  onExit: () => void;
+}
+
+const IPhoneShell: React.FC<IPhoneShellProps> = ({ playSound, onExit }) => {
     const [activeApp, setActiveApp] = useState('home');
 
     const openApp = (appId: string) => {
@@ -1892,6 +1891,7 @@ const IPhoneShell: React.FC<SoundProps> = ({ playSound }) => {
     return (
         <div className="iphone-shell-container">
             <div className="iphone-shell">
+                 <div className="iphone-exit-button" onClick={onExit} title="Thoát giả lập"></div>
                 <div className="iphone-screen">
                     <StatusBar />
                     <div className="iphone-content" key={activeApp}>
@@ -1936,7 +1936,7 @@ const App = () => {
   
   const renderActiveApp = () => {
     switch(activeApp) {
-        case 'iphone': return <IPhoneShell playSound={playSound} />;
+        case 'iphone': return <IPhoneShell playSound={playSound} onExit={() => handleNavClick('bauCua')} />;
         case 'bauCua': return <BauCuaGame balance={balance} setBalance={setBalance} playSound={playSound} />;
         case 'diceRoller': return <DiceRoller balance={balance} setBalance={setBalance} playSound={playSound} />;
         case 'sudoku': return <SudokuGame playSound={playSound} />;
