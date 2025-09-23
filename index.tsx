@@ -2052,7 +2052,7 @@ const App = () => {
     <div className="app-container">
       <aside className="sidebar">
         <div className="sidebar-header">
-            <h1>Giải Trí Center</h1>
+            <h1>🍸 Martini</h1>
         </div>
         <nav>
             {NAV_ITEMS.map(item => (

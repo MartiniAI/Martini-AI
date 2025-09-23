@@ -69,6 +69,10 @@ html, body, #root {
   color: var(--primary-color);
   font-weight: 700;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 .sidebar nav {
   flex-grow: 1;
