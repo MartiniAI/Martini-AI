@@ -1,6 +1,5 @@
 
 
-
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -28,12 +27,12 @@ interface SoundProps {
 }
 
 const BAU_CUA_ITEMS = [
-  { id: 'nai', name: 'Nai', imgSrc: 'https://i.ibb.co/YTBmMzC/nai.png' },
-  { id: 'bau', name: 'Bầu', imgSrc: 'https://i.ibb.co/r2YyKXV/bau.png' },
-  { id: 'ga', name: 'Gà', imgSrc: 'https://i.ibb.co/wJ34b3d/ga.png' },
-  { id: 'ca', name: 'Cá', imgSrc: 'https://i.ibb.co/hM2gN75/ca.png' },
-  { id: 'cua', name: 'Cua', imgSrc: 'https://i.ibb.co/P9Lqf6V/cua.png' },
-  { id: 'tom', name: 'Tôm', imgSrc: 'https://i.ibb.co/6ZzJ2vW/tom.png' },
+  { id: 'nai', name: 'Nai', imgSrc: 'https://i.imgur.com/8z8w4Wb.png' },
+  { id: 'bau', name: 'Bầu', imgSrc: 'https://i.imgur.com/S2ENTpD.png' },
+  { id: 'ga', name: 'Gà', imgSrc: 'https://i.imgur.com/m2a5f6D.png' },
+  { id: 'ca', name: 'Cá', imgSrc: 'https://i.imgur.com/B7N3I4g.png' },
+  { id: 'cua', name: 'Cua', imgSrc: 'https://i.imgur.com/nEo3zT1.png' },
+  { id: 'tom', name: 'Tôm', imgSrc: 'https://i.imgur.com/J3dJz9u.png' },
 ];
 
 const BET_AMOUNT = 10;
@@ -87,8 +86,8 @@ const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
       for (const [itemId, betAmount] of Object.entries(bets)) {
           const appearances = newResults.filter(res => res === itemId).length;
           if (appearances > 0) {
-              // FIX: Refactored redundant check. `betAmount` is already a number here.
-              payout += betAmount + (betAmount * appearances);
+              // FIX: The value from Object.entries was inferred as 'unknown'. Casting to Number to allow arithmetic.
+              payout += Number(betAmount) + (Number(betAmount) * appearances);
           }
       }
 
@@ -212,7 +211,8 @@ const DiceRoller: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
     const [isRolling, setIsRolling] = useState(false);
     const [message, setMessage] = useState('Chọn một mặt và nhấn Đổ!');
 
-    const totalBet = useMemo(() => Object.values(bets).reduce((sum, current) => sum + current, 0), [bets]);
+    // FIX: Operator '+' cannot be applied to types 'unknown' and 'unknown'. Added explicit types for reduce callback parameters.
+    const totalBet = useMemo(() => Object.values(bets).reduce((sum: number, current: number) => sum + current, 0), [bets]);
 
     const placeBet = (itemId: string) => {
         if (isRolling) return;
@@ -222,6 +222,8 @@ const DiceRoller: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
         }
         playSound('bet');
         setBalance(prev => prev - BET_AMOUNT);
+        // FIX: Operator '+' cannot be applied to types 'unknown' and 'unknown'.
+        // Simplified the logic to correctly calculate the new bet amount, aligning with patterns elsewhere in the app.
         setBets(prev => ({ ...prev, [itemId]: (prev[itemId] || 0) + BET_AMOUNT }));
     };
 
@@ -1558,20 +1560,19 @@ const StatsCalculator = () => {
         const sum = numbers.reduce((acc, val) => acc + val, 0);
         const mean = sum / count;
         
-        // FIX: Initialize median to ensure it has type 'number' and avoid potential type errors.
-        let median = 0;
+        // FIX: Refactored median calculation to be immutable and more type-safe, avoiding potential errors.
         const mid = Math.floor(count / 2);
-        if (count % 2 === 0) {
-            median = (numbers[mid - 1] + numbers[mid]) / 2;
-        } else {
-            median = numbers[mid];
-        }
+        const median = count % 2 === 0
+            ? (numbers[mid - 1] + numbers[mid]) / 2
+            : numbers[mid];
 
         const counts = numbers.reduce((acc: Record<string, number>, val) => {
             acc[String(val)] = (acc[String(val)] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
-        const maxFreq = Math.max(...Object.values(counts));
+        // FIX: Argument of type 'unknown' is not assignable to parameter of type 'number'.
+        // Added a type assertion because the compiler was failing to infer that Object.values returns a number array.
+        const maxFreq = Math.max(...(Object.values(counts) as number[]));
         const modeKeys = Object.keys(counts).filter(key => counts[key] === maxFreq);
         // If there's a single mode, treat it as a number. Otherwise, it's a string list.
         const mode: string | number = modeKeys.length === 1 ? Number(modeKeys[0]) : modeKeys.join(', ');
@@ -1918,6 +1919,19 @@ const NAV_ITEMS = [
     {id: 'rates', name: 'Tỷ Giá', icon: '💹'},
 ];
 
+const APP_BACKGROUNDS: Record<string, string> = {
+    iphone: 'bg-iphone',
+    bauCua: 'bg-bau-cua',
+    diceRoller: 'bg-dice-roller',
+    sudoku: 'bg-sudoku',
+    memory: 'bg-memory',
+    math: 'bg-math',
+    lunar: 'bg-lunar',
+    weather: 'bg-weather',
+    rates: 'bg-rates',
+};
+
+
 const App = () => {
   const [activeApp, setActiveApp] = useState('bauCua');
   const [balance, setBalance] = useState<number>(1000);
@@ -1948,6 +1962,8 @@ const App = () => {
         default: return <BauCuaGame balance={balance} setBalance={setBalance} playSound={playSound} />;
     }
   };
+  
+  const backgroundClass = APP_BACKGROUNDS[activeApp] || '';
 
   return (
     <div className="app-container">
@@ -1973,7 +1989,7 @@ const App = () => {
             </button>
         </div>
       </aside>
-      <main className="main-content">
+      <main className={`main-content ${backgroundClass}`}>
           {renderActiveApp()}
       </main>
     </div>

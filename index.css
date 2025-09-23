@@ -1,3 +1,4 @@
+
 :root {
   --primary-color: #0d6efd;
   --primary-hover: #0b5ed7;
@@ -126,12 +127,27 @@ html, body, #root {
 }
 
 
-/* --- Main Content --- */
+/* --- Main Content & Themed Backgrounds --- */
 .main-content {
   overflow-y: auto;
   padding: 2rem;
-  background-color: #f8f9fa;
+  background-color: var(--background-color);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  transition: background-image 0.5s ease-in-out;
 }
+
+.bg-iphone { background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1554189097-c83e39b4b0de?w=800'); }
+.bg-bau-cua { background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1546554320-56d112457b01?w=800'); }
+.bg-dice-roller { background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url('https://images.unsplash.com/photo-1542228263-490b2f6a4913?w=800'); }
+.bg-sudoku { background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url('https://images.unsplash.com/photo-1542911226-50e5428a2b53?w=800'); }
+.bg-memory { background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1448375240586-882707db888b?w=800'); }
+.bg-math { background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1509228627-15051470b163?w=800'); }
+.bg-lunar { background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url('https://images.unsplash.com/photo-1532074534363-5a8a3c8535a2?w=800'); }
+.bg-weather { background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url('https://images.unsplash.com/photo-1500332363718-a6d1c34a1a5b?w=800'); }
+.bg-rates { background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800'); }
+
 
 .game-title {
   text-align: center;
@@ -148,6 +164,13 @@ html, body, #root {
   gap: 1.5rem;
   max-width: 900px;
   margin: 0 auto;
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
 .stats-bar {
@@ -179,7 +202,7 @@ html, body, #root {
   padding: 1rem;
   text-align: center;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s, border-color 0.2s;
   box-shadow: var(--box-shadow);
 }
 
@@ -325,13 +348,29 @@ html, body, #root {
   align-items: center;
 }
 .die { display: inline-block; width: 96px; height: 96px; }
-.die.shaking { animation: shake-regular 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+.die.shaking { animation: dice-tumble 1s ease-out; }
 
-@keyframes shake-regular {
-  10%, 90% { transform: translate3d(-1px, 0, 0); }
-  20%, 80% { transform: translate3d(2px, 0, 0); }
-  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-  40%, 60% { transform: translate3d(4px, 0, 0); }
+@keyframes dice-tumble {
+  0% {
+    transform: scale(0.8) rotateZ(0);
+    opacity: 0.8;
+  }
+  20% {
+    transform: scale(1.2) rotateZ(180deg) translateY(-20px);
+  }
+  40% {
+    transform: scale(1.1) rotateZ(360deg) translateY(0);
+  }
+  60% {
+    transform: scale(1.2) rotateZ(540deg) translateY(-10px);
+  }
+  80% {
+    transform: scale(1.1) rotateZ(720deg) translateY(0);
+  }
+  100% {
+    transform: scale(1) rotateZ(720deg);
+    opacity: 1;
+  }
 }
 
 /* --- Sudoku & Memory Game Common --- */
@@ -858,6 +897,13 @@ html, body, #root {
   align-items: center;
   padding: 1rem 0;
   width: 100%;
+  /* Overriding container styles for this specific app */
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 .iphone-shell {
   width: 100%;
@@ -1214,6 +1260,10 @@ html, body, #root {
     flex-grow: 1;
   }
   
+  .game-container, .tool-container {
+    padding: 1.5rem;
+  }
+
   .bau-cua-board-2d {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
