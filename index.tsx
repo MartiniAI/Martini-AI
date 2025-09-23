@@ -27,12 +27,12 @@ interface SoundProps {
 }
 
 const BAU_CUA_ITEMS = [
-  { id: 'nai', name: 'Nai', imgSrc: 'https://i.imgur.com/8z8w4Wb.png' },
-  { id: 'bau', name: 'Bầu', imgSrc: 'https://i.imgur.com/S2ENTpD.png' },
-  { id: 'ga', name: 'Gà', imgSrc: 'https://i.imgur.com/m2a5f6D.png' },
-  { id: 'ca', name: 'Cá', imgSrc: 'https://i.imgur.com/B7N3I4g.png' },
-  { id: 'cua', name: 'Cua', imgSrc: 'https://i.imgur.com/nEo3zT1.png' },
-  { id: 'tom', name: 'Tôm', imgSrc: 'https://i.imgur.com/J3dJz9u.png' },
+  { id: 'nai', name: 'Nai', emoji: '🦌' },
+  { id: 'bau', name: 'Bầu', emoji: '🎃' },
+  { id: 'ga', name: 'Gà', emoji: '🐓' },
+  { id: 'ca', name: 'Cá', emoji: '🐟' },
+  { id: 'cua', name: 'Cua', emoji: '🦀' },
+  { id: 'tom', name: 'Tôm', emoji: '🦐' },
 ];
 
 const BET_AMOUNT = 10;
@@ -86,7 +86,6 @@ const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
       for (const [itemId, betAmount] of Object.entries(bets)) {
           const appearances = newResults.filter(res => res === itemId).length;
           if (appearances > 0) {
-              // FIX: The value from Object.entries was inferred as 'unknown'. Casting to Number to allow arithmetic.
               payout += Number(betAmount) + (Number(betAmount) * appearances);
           }
       }
@@ -132,7 +131,7 @@ const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
             aria-label={`Bet on ${item.name}`}
           >
             <div className="item-emoji" aria-hidden="true">
-              <img src={item.imgSrc} alt={item.name} />
+              {item.emoji}
             </div>
             <div className="item-name">{item.name}</div>
             <div className="bet-amount">{bets[item.id] > 0 ? bets[item.id] : ''}</div>
@@ -144,7 +143,7 @@ const BauCuaGame: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
           {isShaking && <div className="shaking-text">Đang lắc...</div>}
           {!isShaking && results.length > 0 && results.map((resultId, index) => {
              const item = BAU_CUA_ITEMS.find(i => i.id === resultId);
-             return item ? <img key={index} src={item.imgSrc} alt={item.name} className="result-item" /> : null;
+             return item ? <div key={index} className="result-item">{item.emoji}</div> : null;
           })}
       </div>
 
@@ -211,7 +210,6 @@ const DiceRoller: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
     const [isRolling, setIsRolling] = useState(false);
     const [message, setMessage] = useState('Chọn một mặt và nhấn Đổ!');
 
-    // FIX: Operator '+' cannot be applied to types 'unknown' and 'unknown'. Added explicit types for reduce callback parameters.
     const totalBet = useMemo(() => Object.values(bets).reduce((sum: number, current: number) => sum + current, 0), [bets]);
 
     const placeBet = (itemId: string) => {
@@ -222,8 +220,6 @@ const DiceRoller: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
         }
         playSound('bet');
         setBalance(prev => prev - BET_AMOUNT);
-        // FIX: Operator '+' cannot be applied to types 'unknown' and 'unknown'.
-        // Simplified the logic to correctly calculate the new bet amount, aligning with patterns elsewhere in the app.
         setBets(prev => ({ ...prev, [itemId]: (prev[itemId] || 0) + BET_AMOUNT }));
     };
 
@@ -248,9 +244,6 @@ const DiceRoller: React.FC<GameProps> = ({ balance, setBalance, playSound }) => 
             const winningFace = roll.toString();
             let payout = 0;
             const betValue = bets[winningFace];
-            // FIX: The type of `bets[winningFace]` was inferred as `unknown`, causing a type error.
-            // Using a `typeof` check to ensure it's a number before calculations.
-            // Assigning to a new const helps the type checker preserve the narrowed type within the closure.
             if (typeof betValue === 'number') {
                 const numericBetValue = betValue;
                 payout = numericBetValue + (numericBetValue * 5);
@@ -516,7 +509,11 @@ const SudokuGame: React.FC<SoundProps> = ({ playSound }) => {
 
     const handleDifficultyChange = () => {
         playSound('click');
-        localStorage.removeItem('sudokuGameState');
+        try {
+            localStorage.removeItem('sudokuGameState');
+        } catch (error) {
+            console.error("Failed to remove Sudoku game state:", error);
+        }
         setDifficulty(null);
         setInitialBoard(null);
         setSolutionBoard(null);
@@ -681,6 +678,7 @@ const MemoryGame: React.FC<SoundProps> = ({ playSound }) => {
                 setIsNewHighScore(true);
                 const newHighScores = { ...highScores, [difficulty!]: moves };
                 setHighScores(newHighScores);
+// Fix: Added curly braces to the catch block for correct syntax.
                 try {
                     localStorage.setItem('memoryHighScores', JSON.stringify(newHighScores));
                 } catch (error) {
@@ -880,6 +878,7 @@ const LunarCalendar = () => {
 
     const handleConvert = useCallback(() => {
         const [yy, mm, dd] = date.split('-').map(Number);
+        if (!yy || !mm || !dd) return;
         const result = lunarConverter.convertSolarToLunar(dd, mm, yy);
         setLunarResult(result);
     }, [date]);
@@ -936,16 +935,33 @@ const WeatherForecast = () => {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [time, setTime] = useState(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
     const [weather, setWeather] = useState(null);
+    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     const currentCityData = useMemo(() => CITIES.find(c => c.name === city) || CITIES[0], [city]);
 
+    const fetchWeather = useCallback(() => {
+        setIsLoading(true);
+        setError(null);
+        setWeather(null);
+
+        setTimeout(() => {
+            if (Math.random() > 0.8) { // 20% chance of failure
+                setError("Không thể tải dữ liệu thời tiết. Vui lòng thử lại sau.");
+            } else {
+                setWeather(getMockWeatherData());
+            }
+            setIsLoading(false);
+        }, 500);
+    }, [city, date, time]); // Re-fetch if criteria change
+
     useEffect(() => {
-        setWeather(getMockWeatherData());
-    }, [city]);
+        fetchWeather();
+    }, [city]); // Fetch on initial city change
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        setWeather(getMockWeatherData());
+        fetchWeather();
     };
 
     return (
@@ -969,10 +985,15 @@ const WeatherForecast = () => {
                     <input type="time" id="time-input" value={time} onChange={e => setTime(e.target.value)} />
                 </div>
 
-                <button type="submit" className="btn btn-primary">Xem dự báo</button>
+                <button type="submit" className="btn btn-primary" disabled={isLoading}>
+                    {isLoading ? 'Đang tải...' : 'Xem dự báo'}
+                </button>
             </form>
             
-            {weather && currentCityData && (
+            {isLoading && <div className="status-message">Đang tải dữ liệu...</div>}
+            {error && <div className="status-message lose">{error}</div>}
+
+            {weather && !error && currentCityData && (
                 <div className="result-card weather-result-card" aria-live="polite">
                     {currentCityData.image && <img src={currentCityData.image} alt={`Hình ảnh của ${currentCityData.name}`} className="city-image" />}
                     <div className="weather-content">
@@ -1013,7 +1034,6 @@ const ExchangeRates = () => {
         'AUD': 'A$',
     };
 
-    // FIX: Refactored state to be more type-safe, holding a number for calculations or an empty string for the input.
     const [amount, setAmount] = useState<number | ''>(1);
     const [fromCurrency, setFromCurrency] = useState('USD');
     const [toCurrency, setToCurrency] = useState('VND');
@@ -1035,7 +1055,7 @@ const ExchangeRates = () => {
         
         setResult(`${formattedResult} ${currencySymbols[toCurrency] || toCurrency}`);
 
-    }, [amount, fromCurrency, toCurrency]);
+    }, [amount, fromCurrency, toCurrency, rates, currencySymbols]);
 
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -1125,11 +1145,25 @@ const formatNumber = (num: number, precision = 4) => {
 const QuadraticSolver = () => {
     const [coeffs, setCoeffs] = useState<{ a: string | number; b: string | number; c: string | number; }>({ a: '', b: '', c: '' });
     const [solution, setSolution] = useState(null);
+    const [error, setError] = useState<string | null>(null);
 
     const handleSolve = () => {
-        const a = parseFloat(coeffs.a.toString()) || 0;
-        const b = parseFloat(coeffs.b.toString()) || 0;
-        const c = parseFloat(coeffs.c.toString()) || 0;
+        setSolution(null);
+        setError(null);
+
+        if (coeffs.a === '' || coeffs.b === '' || coeffs.c === '') {
+            setError("Vui lòng nhập đủ các hệ số a, b, và c.");
+            return;
+        }
+
+        const a = parseFloat(coeffs.a.toString());
+        const b = parseFloat(coeffs.b.toString());
+        const c = parseFloat(coeffs.c.toString());
+        
+        if (isNaN(a) || isNaN(b) || isNaN(c)) {
+            setError("Hệ số không hợp lệ. Vui lòng chỉ nhập số.");
+            return;
+        }
 
         if (a === 0) {
             if (b === 0) {
@@ -1197,6 +1231,7 @@ const QuadraticSolver = () => {
                 <div className="input-group"><label>c =</label><input type="number" name="c" value={coeffs.c} onChange={handleChange} /></div>
                 <button onClick={handleSolve} className="btn btn-primary">Giải</button>
             </div>
+            {error && <div className="status-message lose">{error}</div>}
             {solution && (
                  <div className="solution-steps">
                     <h4>Phương trình:</h4>
@@ -1227,20 +1262,33 @@ const QuadraticSolver = () => {
 };
 
 const CubicSolver = () => {
-    // This is a simplified solver for demonstration and might not cover all edge cases perfectly.
-    // FIX: Changed state to be of type string | number to align with other solver components.
     const [coeffs, setCoeffs] = useState<{ a: string | number; b: string | number; c: string | number; d: string | number; }>({ a: '', b: '', c: '', d: '' });
     const [solution, setSolution] = useState(null);
+    const [error, setError] = useState<string | null>(null);
 
     const handleSolve = () => {
-        // FIX: Added .toString() to safely handle the string | number union type when parsing.
-        let a = parseFloat(coeffs.a.toString()) || 0;
-        let b = parseFloat(coeffs.b.toString()) || 0;
-        let c = parseFloat(coeffs.c.toString()) || 0;
-        let d = parseFloat(coeffs.d.toString()) || 0;
+        setSolution(null);
+        setError(null);
+
+        if (coeffs.a === '' || coeffs.b === '' || coeffs.c === '' || coeffs.d === '') {
+            setError("Vui lòng nhập đủ các hệ số a, b, c, và d.");
+            return;
+        }
+
+        const a_val = parseFloat(coeffs.a.toString());
+        const b_val = parseFloat(coeffs.b.toString());
+        const c_val = parseFloat(coeffs.c.toString());
+        const d_val = parseFloat(coeffs.d.toString());
+
+        if (isNaN(a_val) || isNaN(b_val) || isNaN(c_val) || isNaN(d_val)) {
+            setError("Hệ số không hợp lệ. Vui lòng chỉ nhập số.");
+            return;
+        }
+
+        let a = a_val, b = b_val, c = c_val, d = d_val;
 
         if (a === 0) {
-            setSolution({ message: "Hệ số 'a' không thể bằng 0. Đây là phương trình bậc 2 hoặc thấp hơn." });
+            setError("Hệ số 'a' không thể bằng 0. Đây là phương trình bậc 2 hoặc thấp hơn.");
             return;
         }
 
@@ -1252,9 +1300,9 @@ const CubicSolver = () => {
         const delta = (q / 2) * (q / 2) + (p / 3) * (p / 3) * (p / 3);
         
         const steps = [
-            `Phương trình ban đầu: ${coeffs.a}x³ + ${coeffs.b}x² + ${coeffs.c}x + ${coeffs.d} = 0`,
+            `Phương trình ban đầu: ${a_val}x³ + ${b_val}x² + ${c_val}x + ${d_val} = 0`,
             `Chuẩn hóa (chia cho a): x³ + ${formatNumber(b)}x² + ${formatNumber(c)}x + ${formatNumber(d)} = 0`,
-            `Đặt x = t - b/3a để khử số hạng bậc 2, ta được phương trình dạng t³ + pt + q = 0`,
+            `Đặt x = t - b/3 để khử số hạng bậc 2, ta được phương trình dạng t³ + pt + q = 0`,
             `p = (3c - b²) / 3 = ${formatNumber(p)}`,
             `q = (2b³ - 9bc + 27d) / 27 = ${formatNumber(q)}`,
             `Tính biệt thức Δ = (q/2)² + (p/3)³ = ${formatNumber(delta)}`
@@ -1304,6 +1352,7 @@ const CubicSolver = () => {
                 <div className="input-group"><label>d =</label><input type="number" name="d" value={coeffs.d} onChange={handleChange} /></div>
                 <button onClick={handleSolve} className="btn btn-primary">Giải</button>
             </div>
+            {error && <div className="status-message lose">{error}</div>}
             {solution && (
                  <div className="solution-steps">
                      {solution.message ? <p>{solution.message}</p> : <>
@@ -1321,22 +1370,29 @@ const CubicSolver = () => {
 };
 
 const LinearSystemSolver = () => {
-    // FIX: Explicitly typed state properties as `string | number` to fix type errors on the input's `value` prop and align with other solvers.
     const [coeffs, setCoeffs] = useState<{ a1: string | number; b1: string | number; c1: string | number; a2: string | number; b2: string | number; c2: string | number; }>({ a1: '', b1: '', c1: '', a2: '', b2: '', c2: '' });
     const [solution, setSolution] = useState(null);
+    const [error, setError] = useState<string | null>(null);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setCoeffs({ ...coeffs, [e.target.name]: e.target.value });
     };
 
     const handleSolve = () => {
-        // FIX: Added .toString() to safely handle the string | number union type, consistent with other solvers.
-        const a1 = parseFloat(coeffs.a1.toString()) || 0;
-        const b1 = parseFloat(coeffs.b1.toString()) || 0;
-        const c1 = parseFloat(coeffs.c1.toString()) || 0;
-        const a2 = parseFloat(coeffs.a2.toString()) || 0;
-        const b2 = parseFloat(coeffs.b2.toString()) || 0;
-        const c2 = parseFloat(coeffs.c2.toString()) || 0;
+        setSolution(null);
+        setError(null);
+        
+        const coeffValues = Object.values(coeffs);
+        if (coeffValues.some(c => c === '')) {
+            setError("Vui lòng nhập đủ 6 hệ số.");
+            return;
+        }
+
+        const [a1, b1, c1, a2, b2, c2] = coeffValues.map(c => parseFloat(c.toString()));
+        if ([a1, b1, c1, a2, b2, c2].some(isNaN)) {
+            setError("Hệ số không hợp lệ. Vui lòng chỉ nhập số.");
+            return;
+        }
 
         const D = a1 * b2 - a2 * b1;
         const Dx = c1 * b2 - c2 * b1;
@@ -1385,6 +1441,7 @@ const LinearSystemSolver = () => {
                 </div>
                 <button onClick={handleSolve} className="btn btn-primary">Giải</button>
             </div>
+            {error && <div className="status-message lose">{error}</div>}
             {solution && (
                  <div className="solution-steps">
                     <h4>Hệ phương trình:</h4>
@@ -1413,6 +1470,10 @@ const CalculusSolver = () => {
     const [error, setError] = useState<string | null>(null);
 
     const parsePolynomial = (str: string): {coeff: number, exp: number}[] => {
+        if (str.trim() === '') {
+            throw new Error("Hàm số không được để trống.");
+        }
+        
         const terms: {coeff: number, exp: number}[] = [];
         let processedStr = str.replace(/\s/g, '').replace(/-/g, '+-');
         if (processedStr.startsWith('+-')) {
@@ -1423,7 +1484,9 @@ const CalculusSolver = () => {
 
         for (const termStr of termStrings) {
             if (!termStr.includes('x')) {
-                terms.push({ coeff: parseFloat(termStr), exp: 0 });
+                const coeff = parseFloat(termStr);
+                if (isNaN(coeff)) throw new Error(`Hạng tử không hợp lệ: "${termStr}"`);
+                terms.push({ coeff, exp: 0 });
                 continue;
             }
 
@@ -1435,10 +1498,10 @@ const CalculusSolver = () => {
             if (coeffStr === '-') coeff = -1;
             else if (coeffStr !== '') coeff = parseFloat(coeffStr);
 
-            const exp = parseFloat(expStr);
+            const exp = expStr ? parseFloat(expStr) : 1;
 
             if (isNaN(coeff) || isNaN(exp)) {
-                throw new Error("Hàm số không hợp lệ.");
+                throw new Error(`Hạng tử không hợp lệ: "${termStr}"`);
             }
             
             terms.push({ coeff, exp });
@@ -1487,6 +1550,7 @@ const CalculusSolver = () => {
     const handleCalculate = () => {
         try {
             setError(null);
+            setResult(null);
             const parsedTerms = parsePolynomial(funcStr);
             let resultTerms: {coeff: number, exp: number}[];
 
@@ -1547,11 +1611,19 @@ const CalculusSolver = () => {
 const StatsCalculator = () => {
     const [input, setInput] = useState('');
     const [results, setResults] = useState<Record<string, string | number> | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const handleCalculate = () => {
+        setResults(null);
+        setError(null);
         const numbers = input.split(/[\s,]+/).filter(Boolean).map(Number).filter(n => !isNaN(n));
+        
+        if (input.trim() === '') {
+            setError("Vui lòng nhập vào một dãy số.");
+            return;
+        }
         if (numbers.length === 0) {
-            setResults(null);
+            setError("Không tìm thấy số hợp lệ trong chuỗi bạn nhập.");
             return;
         }
 
@@ -1560,7 +1632,6 @@ const StatsCalculator = () => {
         const sum = numbers.reduce((acc, val) => acc + val, 0);
         const mean = sum / count;
         
-        // FIX: Refactored median calculation to be immutable and more type-safe, avoiding potential errors.
         const mid = Math.floor(count / 2);
         const median = count % 2 === 0
             ? (numbers[mid - 1] + numbers[mid]) / 2
@@ -1570,11 +1641,9 @@ const StatsCalculator = () => {
             acc[String(val)] = (acc[String(val)] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
-        // FIX: Argument of type 'unknown' is not assignable to parameter of type 'number'.
-        // Added a type assertion because the compiler was failing to infer that Object.values returns a number array.
+
         const maxFreq = Math.max(...(Object.values(counts) as number[]));
         const modeKeys = Object.keys(counts).filter(key => counts[key] === maxFreq);
-        // If there's a single mode, treat it as a number. Otherwise, it's a string list.
         const mode: string | number = modeKeys.length === 1 ? Number(modeKeys[0]) : modeKeys.join(', ');
 
         const variance = numbers.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / count;
@@ -1608,6 +1677,7 @@ const StatsCalculator = () => {
                 />
                 <button onClick={handleCalculate} className="btn btn-primary">Tính toán</button>
             </div>
+            {error && <div className="status-message lose">{error}</div>}
             {results && (
                  <div className="result-card">
                     <h3>Kết quả thống kê</h3>
@@ -1790,6 +1860,7 @@ const MailApp = () => {
 const CameraApp: React.FC<SoundProps> = ({ playSound }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [flash, setFlash] = useState(false);
+    const [cameraError, setCameraError] = useState<string | null>(null);
 
     useEffect(() => {
         let stream: MediaStream | null = null;
@@ -1800,7 +1871,10 @@ const CameraApp: React.FC<SoundProps> = ({ playSound }) => {
                     videoRef.current.srcObject = stream;
                 }
             })
-            .catch(err => console.error("Camera access denied:", err));
+            .catch(err => {
+                console.error("Camera access denied:", err);
+                setCameraError("Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập trong cài đặt trình duyệt của bạn.");
+            });
 
         return () => {
             stream?.getTracks().forEach(track => track.stop());
@@ -1815,13 +1889,22 @@ const CameraApp: React.FC<SoundProps> = ({ playSound }) => {
 
     return (
         <div className="iphone-app-screen camera-app">
-            <video ref={videoRef} className="camera-viewfinder" autoPlay playsInline muted></video>
-            {flash && <div className="camera-flash"></div>}
-            <div className="camera-controls">
-                <div className="shutter-button-outer" onClick={handleShutter}>
-                    <div className="shutter-button-inner"></div>
+            {cameraError ? (
+                <div className="camera-error-overlay">
+                    <p>🚫</p>
+                    <p>{cameraError}</p>
                 </div>
-            </div>
+            ) : (
+                <>
+                    <video ref={videoRef} className="camera-viewfinder" autoPlay playsInline muted></video>
+                    {flash && <div className="camera-flash"></div>}
+                    <div className="camera-controls">
+                        <div className="shutter-button-outer" onClick={handleShutter}>
+                            <div className="shutter-button-inner"></div>
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 };
